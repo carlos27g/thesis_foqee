@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: FOQEE_CHECKLIST_GENERATOR",
+            "type": "debugpy",
+            "request": "launch",       
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env",
+            "env": {                                        
+                "CHATGPT_MODEL": "gpt-4o-mini",
+                "MODEL_TEMPERATURE": "0.0",
+                "MAX_TRIES_STRUCTURED_OUTPUT": "3",
+                "RUN_GLOSSARY": "false",           // For transofmrating the glossary of ISO26262 (default false)
+                "RESTRICT_WORK_PRODUCTS": "true", // When developig, use only two WP
+                "ISO_EXTRACT_KNOWLEDGE": "true",   // Extract external references from ISO26262
+                "ADD_CONTEXT_TO_CHECKLIST": "true", // For adding context to the checklist
+                "CREATE_NEW_CONTEXT": "true", // If context is already saved, 
+                "FILTER_CHECKLIST_CONTENT": "true", 
+            },
+        }
+    ]
+}
