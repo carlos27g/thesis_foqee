@@ -13,15 +13,11 @@
             "justMyCode": true,
             "envFile": "${workspaceFolder}/.env",
             "env": {                                        
-                "CHATGPT_MODEL": "gpt-4o-mini",
+                "CHATGPT_MODEL": "gpt-4o",
                 "MODEL_TEMPERATURE": "0.0",
                 "MAX_TRIES_STRUCTURED_OUTPUT": "3",
-                "RUN_GLOSSARY": "false",           // For transofmrating the glossary of ISO26262 (default false)
                 "RESTRICT_WORK_PRODUCTS": "true", // When developig, use only two WP
-                "ISO_EXTRACT_KNOWLEDGE": "true",   // Extract external references from ISO26262
-                "ADD_CONTEXT_TO_CHECKLIST": "true", // For adding context to the checklist
-                "CREATE_NEW_CONTEXT": "true", // If context is already saved, 
-                "FILTER_CHECKLIST_CONTENT": "true", 
+                "NEW_CHECKLISTS": "true",
             },
         }
     ]
