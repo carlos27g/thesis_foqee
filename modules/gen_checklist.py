@@ -3,12 +3,16 @@
 import os
 from termcolor import colored
 
-from llm_services.base_models import ChecklistModel
-from llm_services.prompts import prompt_generate_checklist
+from llm_services.models_checklist import ChecklistModel
+from llm_services.models_content import DescriptionModel
+from llm_services.prompts_checklist import prompt_generate_checklist
 from llm_services.send_prompt import send_prompt
 
 from utils.save_markdown import save_checklist_to_markdown
 from utils.save_models import save_models, load_models
+
+from modules.content_segmentation import (
+    get_iso_knowledge, prompt_filter_requirement, group_by_topics)
 
 
 def generate_checklists(dataframe):
@@ -52,7 +56,8 @@ def generate_checklists(dataframe):
         save_models(f"{work_product} checklist", checklist_model)
 
 
-def generate_wp_checklist(work_product, checklists_work_product_content):
+def generate_wp_checklist(work_product: str,
+                          checklists_work_product_content: list[dict]) -> ChecklistModel:
     """
     Generates a checklist for a given work product by creating a prompt, sending it to the LLM, 
     and returning the generated response.
@@ -69,10 +74,37 @@ def generate_wp_checklist(work_product, checklists_work_product_content):
         The response from the LLM, validated as a ChecklistModel instance, containing the 
         generated checklist for the work product.
     """
-    print("- Generating checklist...")
+    for _ , requirement_info in checklists_work_product_content.items():
+        print(colored(f"Processing requirement {requirement_info['Complete ID']}", 'green'))
+        # Filter requirements content
+        if os.getenv("FILTER_REQUIREMENTS") == "true":
+            filter_prompt = prompt_filter_requirement(requirement_info)
+            filter_message = {"role": "user", "content": filter_prompt}
+            print("- Filtering requirements content")
+            # Retrieve external knowledge for ISO 26262
+            if os.getenv("EXTRACT_ISO_KNOWLDGE") == "true":
+                external_knowledge_message = get_iso_knowledge(requirement_info)
+                if external_knowledge_message:
+                    response = send_prompt([external_knowledge_message, filter_message])
+                else:
+                    response = send_prompt([filter_message])
+            else:
+                response = send_prompt([filter_message], DescriptionModel)
+            # Update the description with the filtered content
+            requirement_info["Description"] = response.description
+    groups_message = None
+    if os.getenv("TOPIC_GROUPING") == "true":
+        # Generate groups
+        print(colored("Grouping requirements by topics", 'green'))
+        groups_message = group_by_topics(checklists_work_product_content)
     prompt = prompt_generate_checklist(work_product, checklists_work_product_content)
-    message = {"role": "user", "content": prompt}
-    response = send_prompt([message], ChecklistModel)
+    message_checklist = {"role": "user", "content": prompt}
+    if groups_message:
+        messages = [groups_message, message_checklist]
+    else:
+        messages = [message_checklist]
+    print("Generating checklist...")
+    response = send_prompt(messages, ChecklistModel)
     return response
 
 

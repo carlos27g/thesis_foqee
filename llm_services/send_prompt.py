@@ -19,7 +19,7 @@ Functions:
 import os
 import openai
 from openai import OpenAI, OpenAIError
-from prompts import prompt_system_role
+from llm_services.prompts_checklist import prompt_system_role
 from utils.messages import add_message
 
 
@@ -69,7 +69,13 @@ def process_response(chat_response, messages, base_model=None):
                 add_message("system", validated_response, base_model)
                 return validated_response
         return None
-    return response.content if response.content else None
+    # Store conversation history
+    if response.content:
+        for msg in messages:
+            add_message(msg['role'], msg['content'], base_model)
+        add_message("system", response.content, base_model)
+        return response.content
+    return None
 
 
 def send_prompt(messages, base_model=None):

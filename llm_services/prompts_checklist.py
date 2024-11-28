@@ -44,7 +44,9 @@ def prompt_generate_checklist(work_product, content) -> str:
         f"comply with the standards without needing to read the frameworks themselves.\n\n"
         f"**Task:**\n"
         f"1. **Thoroughly analyze the provided content of requirements** related to compliance.\n"
-        f"2. **For each checklist item:**\n"
+        f"2. **Identify and group related requirements together** based on common themes or "
+        f"topics.\n"
+        f"3. **For each checklist item:**\n"
         f"   - Include the **IDs** of all the requirements that are relevant to the item.\n"
         f"     - Present the IDs as a list.\n"
         f"   - Provide a **title** for the item that encapsulates the main theme.\n"
@@ -58,5 +60,10 @@ def prompt_generate_checklist(work_product, content) -> str:
         prompt += (
             f"- **Requirement ID:** {req_id}\n"
             f"  - **Description:** {details['Description']}\n"
+        )
+    prompt += (
+            "**Please ensure that the checklist items are comprehensive and that you maximize the "
+            "grouping of related requirements into single items where appropriate. Use the example "
+            "above as a guide.**"
         )
     return prompt
