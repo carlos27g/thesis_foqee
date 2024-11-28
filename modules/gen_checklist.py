@@ -42,25 +42,25 @@ def generate_checklists(dataframe):
 
         # Retrieve the information of the work product
         work_product_rows = dataframe[dataframe['Work Product'] == work_product]
-        checklists_workproduct_content = retrieve_work_product_content(work_product_rows)
+        work_product_content = retrieve_work_product_content(work_product_rows)
 
         # Generate the checklist for the work product
-        checklist = generate_wp_checklist(work_product, checklists_workproduct_content)
+        checklist = generate_wp_checklist(work_product, work_product_content)
         checklist_model = ChecklistModel.model_validate(checklist)
         # Save the checklist
         save_checklist_to_markdown(checklist_model)
         save_models(f"{work_product} checklist", checklist_model)
 
 
-def generate_wp_checklist(workproduct, checklists_workproduct_content):
+def generate_wp_checklist(work_product, checklists_work_product_content):
     """
     Generates a checklist for a given work product by creating a prompt, sending it to the LLM, 
     and returning the generated response.
 
     Args:
-    workproduct (str): 
+    work product (str): 
         The name of the work product for which the checklist is being generated.
-    checklists_workproduct_content (dict): 
+    checklists_work product_content (dict): 
         A dictionary containing the relevant content for the checklist, typically structured 
         information related to the work product.
 
@@ -70,7 +70,7 @@ def generate_wp_checklist(workproduct, checklists_workproduct_content):
         generated checklist for the work product.
     """
     print("- Generating checklist...")
-    prompt = prompt_generate_checklist(workproduct, checklists_workproduct_content)
+    prompt = prompt_generate_checklist(work_product, checklists_work_product_content)
     message = {"role": "user", "content": prompt}
     response = send_prompt([message], ChecklistModel)
     return response
@@ -103,7 +103,7 @@ def retrieve_work_product_content(work_product_rows):
         - For ASPICE: Includes only standard-specific details.
     """
     print("- Retrieving content")
-    checklist_workproduct = {}
+    content_work_product = {}
     for row in work_product_rows.iterrows():
         requirement = None
         if row[1]['Standard Name'] == 'ISO 26262':
@@ -126,11 +126,11 @@ def retrieve_work_product_content(work_product_rows):
                 "Description": row[1]['Description']
             }
         if requirement:
-            checklist_workproduct[requirement['Complete ID']] = requirement
+            content_work_product[requirement['Complete ID']] = requirement
         else:
             raise ValueError(
                 f"Standard Name {row[1]['Standard Name']} is not recognized. "
                 "Only 'ISO 26262' and 'ASPICE' are supported."
             )
-    print(f"- Number of requirements: {len(checklist_workproduct)}")
-    return checklist_workproduct
+    print(f"- Number of requirements: {len(content_work_product)}")
+    return content_work_product

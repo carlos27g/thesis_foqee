@@ -19,13 +19,13 @@ def prompt_system_role() -> str:
     return prompt
 
 # ----------------- Checklist Generation ----------------- #
-def prompt_generate_checklist(workproduct, content) -> str:
+def prompt_generate_checklist(work_product, content) -> str:
     """
     Generates a comprehensive checklist prompt for tracking and compliance of a given work 
     product within the ISO 26262 and Automotive SPICE standard frameworks for the automotive 
     industry.
     Args:
-        workproduct (str): The name of the work product for which the checklist is being 
+        work product (str): The name of the work product for which the checklist is being 
                            generated.
         content (dict): A dictionary containing the requirements content, where keys are 
                         requirement IDs and values are dictionaries with requirement details, 
@@ -34,7 +34,7 @@ def prompt_generate_checklist(workproduct, content) -> str:
 
     prompt = (
         f"You are tasked with generating a comprehensive checklist to support tracking and "
-        f"compliance of **{workproduct}** within the ISO 26262 and Automotive SPICE standard "
+        f"compliance of **{work_product}** within the ISO 26262 and Automotive SPICE standard "
         f"frameworks for the automotive industry.\n\n"
         f"**Objective:**\n"
         f"- Create a checklist that serves as practical guide of actionable items and questions.\n"
