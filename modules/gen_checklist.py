@@ -1,7 +1,7 @@
-""" This script contains all the methods necessary for step 3 'Generating Checklists'."""
-import os
+""" This script contains all the methods necessary for the step 'Generating Checklists'."""
 
-from termcolor import colored 
+import os
+from termcolor import colored
 
 from llm_services.base_models import ChecklistModel
 from llm_services.prompts import prompt_generate_checklist
@@ -13,18 +13,31 @@ from utils.save_models import save_models, load_models
 
 def generate_checklists(dataframe):
     """
-    INFO: This function generates checklists for each work product based on the provided dataframe.
+    Generates checklists for each unique work product based on the provided dataframe. 
+    If a checklist for a work product already exists and the environment variable 
+    "NEW_CHECKLISTS" is not set to "true," the generation is skipped.
 
-    The dataframe must contain the columns: ID, Description and Work Product.
+    Args:
+    dataframe (pd.DataFrame): 
+        A pandas DataFrame containing the following mandatory columns:
+        - 'ID': Identifier for the checklist item.
+        - 'Description': Description of the checklist item.
+        - 'Work Product': Name of the work product associated with the checklist item.
+
+    Returns:
+    None: 
+        This function performs actions such as loading, validating, and saving checklists 
+        but does not return any value.
     """
     # Loop through each work product
     for work_product in dataframe['Work Product'].unique():
         if os.getenv("NEW_CHECKLISTS") != "true":
-            checklist = load_models(f"{work_product} checklist")
+            checklist = load_models(f"{work_product} checklist", ChecklistModel)
             if checklist:
-                print(colored(f"Checklist for work product {work_product} already exists.", 'green'))
-                continue   
-                 
+                print(colored(
+                    f"Checklist for work product {work_product} already exists.", 'green'))
+                continue
+
         print(colored(f"Generating checklist for work product: {work_product}", 'green'))
 
         # Retrieve the information of the work product
@@ -38,9 +51,25 @@ def generate_checklists(dataframe):
         save_checklist_to_markdown(checklist_model)
         save_models(f"{work_product} checklist", checklist_model)
 
-     
+
 def generate_wp_checklist(workproduct, checklists_workproduct_content):
-    print(f"- Generating checklist...")
+    """
+    Generates a checklist for a given work product by creating a prompt, sending it to the LLM, 
+    and returning the generated response.
+
+    Args:
+    workproduct (str): 
+        The name of the work product for which the checklist is being generated.
+    checklists_workproduct_content (dict): 
+        A dictionary containing the relevant content for the checklist, typically structured 
+        information related to the work product.
+
+    Returns:
+    ChecklistModel: 
+        The response from the LLM, validated as a ChecklistModel instance, containing the 
+        generated checklist for the work product.
+    """
+    print("- Generating checklist...")
     prompt = prompt_generate_checklist(workproduct, checklists_workproduct_content)
     message = {"role": "user", "content": prompt}
     response = send_prompt([message], ChecklistModel)
@@ -49,16 +78,31 @@ def generate_wp_checklist(workproduct, checklists_workproduct_content):
 
 def retrieve_work_product_content(work_product_rows):
     """
-    INFO: This function returns the requirements of a workproduct in the form of a dictionary. 
-    If external knowledge for ISO is activated, it is added to the dictionary as well.
+    Retrieves the requirements of a work product and organizes them into a dictionary format. 
+    Supports requirements from ISO 26262 and ASPICE standards. If external knowledge for ISO 
+    is activated, it adds specific details to the dictionary. Raises an error if required 
+    columns are missing or if an unsupported standard is encountered.
 
-    The work_product_rows must contain the columns: ID, Description and Work Product.
+    Args:
+    work_product_rows (pd.DataFrame): 
+        A pandas DataFrame containing the rows corresponding to a specific work product.
+        The DataFrame must include the following columns:
+        - 'ID': Identifier of the requirement.
+        - 'Description': Description of the requirement.
+        - 'Work Product': Name of the work product.
+        - 'Standard Name': The standard associated with the requirement ('ISO 26262' or 'ASPICE').
+        - Additional columns for ISO 26262:
+          - 'Part', 'Clause', 'Section', 'Subsection', 'Subsubsection'.
+
+    Returns:
+    dict: 
+        A dictionary where the keys are the 'Complete ID' of each requirement, and the values 
+        are the corresponding requirement details.
+        The structure varies depending on the standard:
+        - For ISO 26262: Includes 'Part', 'Clause', 'Section', 'Subsection', 'Subsubsection'.
+        - For ASPICE: Includes only standard-specific details.
     """
-    # Check if the dataframe contains the required columns
-    required_columns = ['ID', 'Description', 'Work Product', 'Standard Name']
-    if not all(column in work_product_rows.columns for column in required_columns):
-        raise ValueError("Dataframe is missing required columns: {}".format(', '.join(required_columns)))
-    print(f"- Retrieving content")
+    print("- Retrieving content")
     checklist_workproduct = {}
     for row in work_product_rows.iterrows():
         requirement = None
@@ -84,6 +128,9 @@ def retrieve_work_product_content(work_product_rows):
         if requirement:
             checklist_workproduct[requirement['Complete ID']] = requirement
         else:
-            raise ValueError(f"Standard Name {row[1]['Standard Name']} is not recognized. Only 'ISO 26262' and 'ASPICE' are supported.")
+            raise ValueError(
+                f"Standard Name {row[1]['Standard Name']} is not recognized. "
+                "Only 'ISO 26262' and 'ASPICE' are supported."
+            )
     print(f"- Number of requirements: {len(checklist_workproduct)}")
-    return checklist_workproduct  
+    return checklist_workproduct

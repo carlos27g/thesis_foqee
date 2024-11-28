@@ -1,7 +1,17 @@
+"""
+This module provides utility functions to save and load Pydantic models using pickle.
+
+Functions:
+- save_models(file_name: str, model: BaseModel) -> None:
+
+- load_models(file_name: str, base_model: BaseModel) -> BaseModel:
+"""
+
 import os
+import json
+
 import pickle
 from pydantic import BaseModel
-import json
 
 def save_models(file_name: str, model: BaseModel) -> None:
     """
@@ -13,7 +23,7 @@ def save_models(file_name: str, model: BaseModel) -> None:
     """
     folder_name = "models_saved"
     os.makedirs(folder_name, exist_ok=True)
-    
+
     file_path = os.path.join(folder_name, f"{file_name}.pkl")
 
     with open(file_path, "wb") as file:
@@ -43,5 +53,3 @@ def load_models(file_name: str, base_model: BaseModel) -> BaseModel:
     print(f"Model loaded successfully from {file_path}")
 
     return model
-
-    

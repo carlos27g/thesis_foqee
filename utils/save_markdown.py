@@ -1,3 +1,10 @@
+"""
+This script contains a function to generate a Markdown document from a ChecklistModel 
+instance and save it as a file.
+
+Functions:
+    save_checklist_to_markdown(checklist_model: ChecklistModel)
+"""
 import os
 
 from llm_services.base_models import ChecklistModel
@@ -5,11 +12,12 @@ from llm_services.base_models import ChecklistModel
 def save_checklist_to_markdown(checklist_model: ChecklistModel):
     """
     Generates a Markdown document from a ChecklistModel instance and saves it as a file.
-
-    :param checklist: An instance of ChecklistModel containing the checklist data.
     """
     # Replace spaces with underscores and remove problematic characters for filenames
-    safe_work_product = "".join(c if c.isalnum() or c in (' ', '_') else '_' for c in checklist_model.work_product)
+    safe_work_product = "".join(
+        c if c.isalnum() or c in (' ', '_') else '_'
+        for c in checklist_model.work_product
+    )
     filename = f"{safe_work_product.replace(' ', '_')}_checklist.md"
 
     markdown_lines = [f"# {checklist_model.work_product}\n"]
@@ -17,11 +25,11 @@ def save_checklist_to_markdown(checklist_model: ChecklistModel):
     for idx, item in enumerate(checklist_model.checklist_items, start=1):
         markdown_lines.append(f"## Item {idx}: {item.title}\n")
         markdown_lines.append("**Questions:**\n")
-        
+
         # Iterate over each question in the description list
         for question_idx, question in enumerate(item.description, start=1):
             markdown_lines.append(f"{question_idx}. {question}")
-        
+
         markdown_lines.append("\n**IDs:**\n")
         for id_ in item.ids:
             markdown_lines.append(f"- {id_}")

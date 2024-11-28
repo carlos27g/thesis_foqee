@@ -1,104 +1,145 @@
+"""
+This script provides functionality for connecting to a language model (LLM) with structured 
+outcomes and validating the responses using Pydantic models. It includes functions to send 
+prompts to the OpenAI API, process the responses, and validate them against a provided schema.
+
+The script also includes a retry mechanism to ensure that the responses follow the expected 
+structured format.
+
+Functions:
+- validate_response_with_model(response_content, base_model): 
+    Validates the response content using the provided Pydantic model.
+- process_response(chat_response, messages, base_model=None): 
+    Processes the ChatGPT response and optionally validates it with a base model.
+- send_prompt(messages, base_model=None): 
+    Sends a query to ChatGPT using the OpenAI API and optionally validates responses with a 
+    Pydantic model.
+"""
+
 import os
 import openai
-from openai import OpenAI
-from llm_services.prompts import prompt_system_role
+from openai import OpenAI, OpenAIError
+from prompts import prompt_system_role
 from utils.messages import add_message
+
 
 def validate_response_with_model(response_content, base_model):
     """
     Validate the response content using the provided base_model.
-    Returns the validated response if successful, otherwise returns None.
+    
+    Parameters:
+    - response_content (str): The JSON content to validate.
+    - base_model (Pydantic model): The model to use for validation.
+    
+    Returns:
+    - dict: Validated response if successful.
+    - None: If validation fails.
     """
     try:
         return base_model.model_validate_json(response_content)
-    except Exception:
+    except (ValueError, TypeError) as e:
+        print(f"Validation error: {e}")
         print("The LLM did not return the expected structured outcome, retrying...")
         return None
 
+
+def process_response(chat_response, messages, base_model=None):
+    """
+    Process the ChatGPT response, optionally validating it with a base model.
+    
+    Parameters:
+    - chat_response (object): The response from the OpenAI chat completion API.
+    - messages (list of dict): The conversation history.
+    - base_model (Pydantic model, optional): Model for validating structured responses.
+    
+    Returns:
+    - dict or None: Validated response or None if validation fails.
+    """
+    response = chat_response.choices[0].message
+    tool_calls = getattr(response, 'tool_calls', None)
+
+    if base_model:
+        if tool_calls and len(tool_calls) > 0:
+            tool_response = tool_calls[0].function.arguments
+            validated_response = validate_response_with_model(tool_response, base_model)
+            if validated_response:
+                # Store conversation history
+                for msg in messages:
+                    add_message(msg['role'], msg['content'], base_model)
+                add_message("system", validated_response, base_model)
+                return validated_response
+        return None
+    return response.content if response.content else None
+
+
 def send_prompt(messages, base_model=None):
     """
-    Send a query to ChatGPT using the OpenAI API and optionally validate responses with a Pydantic model.
+    Send a query to ChatGPT using the OpenAI API and optionally validate responses with a 
+    Pydantic model.
+
+    Parameters:
+    - messages (list of dict): Messages to send, each containing 'role' and 'content'.
+    - base_model (Pydantic model, optional): Model for validating structured responses.
+
+    Returns:
+    - dict or str: Validated response or raw response content.
     """
     try:
         client = OpenAI()
         tools = [openai.pydantic_function_tool(base_model)] if base_model else []
-        max_tries = int(os.getenv("MAX_TRIES_STRUCTURED_OUTPUT", 3))
-        gpt_model= os.getenv("CHATGPT_MODEL")
+        max_tries = int(os.getenv("MAX_TRIES_STRUCTURED_OUTPUT"))
+        gpt_model = os.getenv("CHATGPT_MODEL", "gpt-4")
         temperature = float(os.getenv("MODEL_TEMPERATURE"))
 
-        # Validate messages
+        # Validate messages format
         for message in messages:
-            if not isinstance(message, dict) or 'role' not in message or 'content' not in message:
-                raise ValueError("Each message must be a dictionary containing 'role' and 'content' attributes.")
+            if not all(k in message for k in ('role', 'content')):
+                raise ValueError("Each message must have 'role' and 'content'.")
 
-        # Initial messages
+        # Add initial system message
         messages.insert(0, {"role": "system", "content": prompt_system_role()})
 
-        # First attempt (outside the loop)
+        # First attempt (outside retry loop)
         chat = client.chat.completions.create(
             messages=messages,
             model=gpt_model,
             temperature=temperature,
             tools=tools if base_model else None
         )
+        result = process_response(chat, messages, base_model)
+        if result:
+            return result
 
-        response = chat.choices[0].message
-        tool_calls = getattr(response, 'tool_calls', None)
-
+        # Retry mechanism for structured responses
         if base_model:
-            # Check for tool calls and validate the response
-            if tool_calls and len(tool_calls) > 0:
-                tool_response = tool_calls[0].function.arguments
-                validated_response = validate_response_with_model(tool_response, base_model)
-                if validated_response:
-                    for message in messages:
-                        add_message(message['role'], message['content'], base_model)
-                    add_message("system", validated_response, base_model)
-                    return validated_response
-
-            # Add guidance message if first attempt fails
+            # Add guidance for structured format after first failure
             guidance_message = (
-                "Please ensure the response **follows the structured outcome format** defined earlier. "
-                "Use the information already provided and correct any deviations in the format and content.\n"
-                "The expected outcome structure is:\n"
-                f"{base_model.schema()}"
+                "Please ensure the response **follows the structured outcome format** defined "
+                "earlier. Use the provided schema and correct any deviations in format or "
+                "content.\n"
+                f"The expected outcome structure is:\n{base_model.schema()}"
             )
             messages.append({"role": "system", "content": guidance_message})
 
-        # Retry loop (starts after guidance message is added)
-        for _ in range(max_tries):
-            chat = client.chat.completions.create(
-                messages=messages,
-                model=gpt_model,
-                temperature=temperature,
-                tools=tools if base_model else None
-            )
+            for attempt in range(max_tries):
+                print(f"Retry attempt {attempt + 1}...")
+                chat = client.chat.completions.create(
+                    messages=messages,
+                    model=gpt_model,
+                    temperature=temperature,
+                    tools=tools if base_model else None
+                )
+                result = process_response(chat, messages, base_model)
+                if result:
+                    return result
 
-            response = chat.choices[0].message
-            tool_calls = getattr(response, 'tool_calls', None)
+            # Raise exception if no valid response after retries
+            raise ValueError("No structured response provided after multiple attempts.")
 
-            if base_model and tool_calls and len(tool_calls) > 0:
-                tool_response = tool_calls[0].function.arguments
-                validated_response = validate_response_with_model(tool_response, base_model)
-                if validated_response:
-                    for message in messages:
-                        add_message(message['role'], message['content'], base_model)
-                    add_message("system", validated_response, base_model)
-                    return validated_response
+        # If base_model is not provided, return raw content
+        return chat.choices[0].message.content if chat.choices else None
 
-        # If no valid structured response after retries, raise an error
-        if base_model:
-            raise Exception("No structured response provided after multiple attempts.")
-
-        # If base_model is not provided, return the raw content
-        if not base_model:
-            if response.content:
-                for message in messages:
-                    add_message(message['role'], message['content'], base_model)
-                add_message("system", validated_response, base_model)
-                return response.content
-
-    except Exception as e:
-        print("Unable to generate ChatCompletion response")
+    except (OpenAIError, ValueError, TypeError) as e:
+        print("Error during send_prompt execution:")
         print(f"Exception: {e}")
-        return str(e)
+        raise
