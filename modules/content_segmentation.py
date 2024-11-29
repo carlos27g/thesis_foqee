@@ -23,7 +23,8 @@ import os
 
 from llm_services.prompts_content import prompt_filter_requirement, prompt_generate_topics
 from llm_services.models_content import (
-    IdentifyTablesModel, IdentifyClausesModel, IdentifyExternalIdsModel, TopicslistModel)
+    IdentifyTablesModel, IdentifyClausesModel, IdentifyExternalIdsModel, TopicslistModel,
+    NoInfoModel)
 from llm_services.send_prompt import send_prompt
 
 from utils.extract_iso_knowledge import (
@@ -56,7 +57,7 @@ def get_iso_knowledge(requirement: dict) -> str:
     Returns:
         str: The extracted information from the ISO standard.
     """
-    if requirement["Standard Name"] != 'ISO 26262' or os.getenv("EXTRACT_ISO_KNOWLDGE") != 'true':
+    if requirement["Standard Name"] != 'ISO 26262' or os.getenv("EXTRACT_ISO_KNOWLEDGE") != 'true':
         return None
 
     print("- Extracting external references...")
@@ -71,6 +72,10 @@ def get_iso_knowledge(requirement: dict) -> str:
     # Process external IDs
     retrieved_information += process_external_ids(requirement)
 
+    if retrieved_information:
+        retrieved_information = ("From the requirement, the following information was found:\n"
+        + retrieved_information)
+
     message = {"role": "user", "content": retrieved_information}
     return message
 
@@ -78,7 +83,7 @@ def get_iso_knowledge(requirement: dict) -> str:
 def process_tables(requirement: dict) -> str:
     """Retrieve information from identified tables."""
     table_models = identify_table(requirement)
-    if not table_models:
+    if not table_models or isinstance(table_models, NoInfoModel):
         print("- No table information found")
         return ""
 
@@ -99,7 +104,7 @@ def process_tables(requirement: dict) -> str:
 def process_clauses(requirement: dict) -> str:
     """Retrieve information from identified clauses."""
     clauses_models = identify_clause(requirement)
-    if not clauses_models:
+    if not clauses_models or isinstance(clauses_models, NoInfoModel):
         print("- No clause information found")
         return ""
 
@@ -121,7 +126,7 @@ def process_clauses(requirement: dict) -> str:
 def process_external_ids(requirement: dict) -> str:
     """Retrieve information from identified external IDs."""
     external_id_models = identify_external_id(requirement)
-    if not external_id_models:
+    if not external_id_models or isinstance(external_id_models, NoInfoModel):
         print("- No external ID information found")
         return ""
 

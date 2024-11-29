@@ -13,6 +13,8 @@ Functions:
 import os
 import pandas as pd
 
+from llm_services.models_content import ClauseModel
+
 # ----------------- Prompts for content segmentation ----------------- #
 def prompt_filter_requirement(requirement) -> str:
     """
@@ -344,7 +346,7 @@ def prompt_identify_external_id(requirement) -> str:
     return None
 
 
-def create_clause_summary_prompt(clause_model: dict, clause_requirements: pd) -> str:
+def create_clause_summary_prompt(clause_model: ClauseModel, clause_requirements: pd) -> str:
     """
     Generates a prompt for summarizing a specific clause from a standard document.
     Args:

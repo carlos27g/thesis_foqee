@@ -82,14 +82,12 @@ def generate_wp_checklist(work_product: str,
             filter_message = {"role": "user", "content": filter_prompt}
             print("- Filtering requirements content")
             # Retrieve external knowledge for ISO 26262
-            if os.getenv("EXTRACT_ISO_KNOWLDGE") == "true":
+            messages = [filter_message]
+            if os.getenv("EXTRACT_ISO_KNOWLEDGE") == "true":
                 external_knowledge_message = get_iso_knowledge(requirement_info)
                 if external_knowledge_message:
-                    response = send_prompt([external_knowledge_message, filter_message])
-                else:
-                    response = send_prompt([filter_message])
-            else:
-                response = send_prompt([filter_message], DescriptionModel)
+                    messages.insert(0, external_knowledge_message)
+            response = send_prompt(messages, DescriptionModel)
             # Update the description with the filtered content
             requirement_info["Description"] = response.description
     groups_message = None

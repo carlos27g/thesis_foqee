@@ -35,6 +35,15 @@ class TopicslistModel(BaseModel):
         ..., description="A list of topics for a work product.")
 
 # ------------------ Models ISO ------------------ #
+class NoInfoModel(BaseModel):
+    """
+    Represents the idea that when the LLM does not find a table or a clause, it returns 
+    a NoneModel with the boolean set to true indicating no information found.
+    """
+    no_information_found: bool = Field(
+        ..., description="Indicates that no information was found.")
+
+
 class IdentifyInformationModel(BaseModel):
     """
     Represents information about a standard and its part number.
@@ -67,6 +76,14 @@ class ClauseModel(IdentifyInformationModel):
     """
     clause_number: int = Field(
         ..., description="The number of the clause in the part.")
+
+
+class ClauseSummaryModel(ClauseModel):
+    """
+    Extends ClauseModel to include a summary of the clause.
+    """
+    summary: str = Field(
+        ..., description="A summary of the clause.")
 
 
 class IdentifyClausesModel(BaseModel):

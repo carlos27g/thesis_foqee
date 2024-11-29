@@ -20,8 +20,10 @@ import os
 import openai
 from openai import OpenAI, OpenAIError
 from llm_services.prompts_checklist import prompt_system_role
+from llm_services.models_content import (
+    NoInfoModel, TableModel, ClauseModel, ClauseSummaryModel, IdentifyExternalIdsModel,
+    IdentifyTablesModel, IdentifyClausesModel, IdentifyInformationModel)
 from utils.messages import add_message
-
 
 def validate_response_with_model(response_content, base_model):
     """
@@ -43,7 +45,7 @@ def validate_response_with_model(response_content, base_model):
         return None
 
 
-def process_response(chat_response, messages, base_model=None):
+def process_response(chat_response, messages, base_model=None, bool_iso_model=False):
     """
     Process the ChatGPT response, optionally validating it with a base model.
     
@@ -58,6 +60,22 @@ def process_response(chat_response, messages, base_model=None):
     response = chat_response.choices[0].message
     tool_calls = getattr(response, 'tool_calls', None)
 
+    if base_model and bool_iso_model:
+        if tool_calls and len(tool_calls) > 0:
+            tool_response = next(
+                (call.function.arguments for call in tool_calls
+                 if call.function.name == "NoInfoModel"),
+                None
+            )
+            if tool_response:
+            # Validate response using a specialized ISO-compliant method
+                validated_response = validate_response_with_model(tool_response, NoInfoModel)
+                if validated_response:
+                    # Store conversation history
+                    for msg in messages:
+                        add_message(msg['role'], msg['content'], base_model)
+                    add_message("system", "Nothing found", base_model)
+                    return validated_response
     if base_model:
         if tool_calls and len(tool_calls) > 0:
             tool_response = tool_calls[0].function.arguments
@@ -92,10 +110,17 @@ def send_prompt(messages, base_model=None):
     """
     try:
         client = OpenAI()
-        tools = [openai.pydantic_function_tool(base_model)] if base_model else []
         max_tries = int(os.getenv("MAX_TRIES_STRUCTURED_OUTPUT"))
         gpt_model = os.getenv("CHATGPT_MODEL", "gpt-4")
         temperature = float(os.getenv("MODEL_TEMPERATURE"))
+        tools = [openai.pydantic_function_tool(base_model)] if base_model else []
+        bool_iso_model = bool(base_model and issubclass(base_model, (
+            NoInfoModel, TableModel, ClauseModel, ClauseSummaryModel,
+            IdentifyExternalIdsModel, IdentifyTablesModel, IdentifyClausesModel,
+            IdentifyInformationModel)))
+
+        if bool_iso_model:
+            tools.append(openai.pydantic_function_tool(NoInfoModel))
 
         # Validate messages format
         for message in messages:
@@ -112,7 +137,7 @@ def send_prompt(messages, base_model=None):
             temperature=temperature,
             tools=tools if base_model else None
         )
-        result = process_response(chat, messages, base_model)
+        result = process_response(chat, messages, base_model, bool_iso_model)
         if result:
             return result
 
@@ -123,8 +148,17 @@ def send_prompt(messages, base_model=None):
                 "Please ensure the response **follows the structured outcome format** defined "
                 "earlier. Use the provided schema and correct any deviations in format or "
                 "content.\n"
-                f"The expected outcome structure is:\n{base_model.schema()}"
+                f"The expected outcome structure is:\n{base_model.model_json_schema()}\n"
             )
+            if bool_iso_model:
+                guidance_message += (
+                    "\nHowever if no information is found, return the function: "
+                    "NoInfoModel with 'no_information' set to true."
+                )
+            if chat.choices[0].message.content:
+                guidance_message += (
+                    f"\nYou generated this before:\n{chat.choices[0].message.content}"
+                )
             messages.append({"role": "system", "content": guidance_message})
 
             for attempt in range(max_tries):
@@ -135,7 +169,7 @@ def send_prompt(messages, base_model=None):
                     temperature=temperature,
                     tools=tools if base_model else None
                 )
-                result = process_response(chat, messages, base_model)
+                result = process_response(chat, messages, base_model, bool_iso_model)
                 if result:
                     return result
 

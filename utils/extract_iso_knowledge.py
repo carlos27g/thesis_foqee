@@ -18,12 +18,10 @@ import pandas as pd
 
 from llm_services.models_content import (
     IdentifyTablesModel, IdentifyClausesModel, TableModel, ClauseModel,
-    IdentifyExternalIdsModel, RequirementIdModel
-)
+    IdentifyExternalIdsModel, RequirementIdModel, ClauseSummaryModel)
 from llm_services.prompts_content import (
-    prompt_identify_external_id, prompt_identify_clause, prompt_identify_table,
-    create_clause_summary_prompt
-)
+    prompt_identify_external_id, prompt_identify_clause, prompt_identify_table, 
+    create_clause_summary_prompt)
 from llm_services.send_prompt import send_prompt
 
 def identify_table(requirement):
@@ -114,9 +112,11 @@ def retrieve_clause_knowledge(clause_model: ClauseModel) -> str:
             (dataframe['Clause'] == clause_model.clause_number)
         ]
     if not data_filtered.empty:
-        message = {"role": "user", "content": f"Clause {clause_model.clause_number} found."}
-        clause_summary = send_prompt([message])
-        return clause_summary
+        prompt_sumary = create_clause_summary_prompt(clause_model, data_filtered)
+        message = {"role": "user", "content": f"{prompt_sumary}"}
+        clause_summary = send_prompt([message], ClauseSummaryModel)
+        if clause_summary:
+            return clause_summary.summary
     return None
 
 
