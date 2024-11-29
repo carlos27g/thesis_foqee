@@ -18,12 +18,14 @@ Execution:
     This script is intended to be run as a standalone program.
 
 """
-import time
 
+import os
+import time
 from termcolor import colored
 
 from modules.create_input import create_input
 from modules.gen_checklist import generate_checklists
+from modules.gen_context import gen_context
 
 
 start_time = time.time()
@@ -38,9 +40,14 @@ work_products = set(input_data['Work Product'])
 for i, work_product in enumerate(work_products, start=1):
     print(f"{i}. {work_product}")
 
+# 3. Generate the context for each work product
+if os.getenv('ADD_WP_CONTEXT') == 'true':
+    print(colored("Extracting context for work products...", "blue"))
+    context = gen_context(input_data)
+
 # 3. Generate the checklist for each work product
 print(colored("Generating checklist for work products...", "blue"))
-generate_checklists(input_data)
+generate_checklists(input_data, context)
 
 # Stop the timer
 end_time = time.time()

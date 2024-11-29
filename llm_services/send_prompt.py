@@ -39,8 +39,7 @@ def validate_response_with_model(response_content, base_model):
     """
     try:
         return base_model.model_validate_json(response_content)
-    except (ValueError, TypeError) as e:
-        print(f"Validation error: {e}")
+    except (ValueError, TypeError) as _ :
         print("The LLM did not return the expected structured outcome, retrying...")
         return None
 
