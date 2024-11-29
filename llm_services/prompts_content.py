@@ -421,6 +421,7 @@ def prompt_generate_topics(requirements_work_product: list[dict]) -> str:
             f"- **Requirement ID:** {req['Complete ID']}\n"
             f"  - **Description:** {req['Description']}\n"
         )
+    prompt += ("\nIt is allowed to repeat requirements in different topics if they are relevant.\n")
     return prompt
 
 # ----------------- Helper method ----------------- #
