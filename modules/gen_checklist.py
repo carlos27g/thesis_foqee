@@ -52,7 +52,7 @@ def generate_checklists(dataframe):
         checklist = generate_wp_checklist(work_product, work_product_content)
         checklist_model = ChecklistModel.model_validate(checklist)
         # Save the checklist
-        save_checklist_to_markdown(checklist_model)
+        save_checklist_to_markdown(checklist_model, work_product)
         save_models(f"{work_product} checklist", checklist_model)
 
 
