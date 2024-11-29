@@ -19,7 +19,7 @@ Functions:
 import os
 import openai
 from openai import OpenAI, OpenAIError
-from prompts import prompt_system_role
+from llm_services.prompts import prompt_system_role
 from utils.messages import add_message
 
 
