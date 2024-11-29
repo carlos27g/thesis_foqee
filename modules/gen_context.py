@@ -42,7 +42,7 @@ def gen_context(df_standards) -> dict:
     context = {}
 
     # Load existing context if available
-    if os.getenv('CREATE_NEW_CONTEXT') == 'false':
+    if os.getenv('NEW_CONTEXT') == 'false':
         print(colored("Loading existing contexts...", "green"))
         for work_product in work_products:
             context_model = load_models(f"{work_product} context", WorkProductContextModel)

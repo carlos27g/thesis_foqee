@@ -10,18 +10,18 @@ import os
 from llm_services.models_checklist import ChecklistModel
 from llm_services.models_context import WorkProductContextModel
 
-def save_checklist_to_markdown(checklist_model: ChecklistModel):
+def save_checklist_to_markdown(checklist_model: ChecklistModel, work_product: str):
     """
     Generates a Markdown document from a ChecklistModel instance and saves it as a file.
     """
     # Replace spaces with underscores and remove problematic characters for filenames
     safe_work_product = "".join(
         c if c.isalnum() or c in (' ', '_') else '_'
-        for c in checklist_model.work_product
+        for c in work_product
     )
     filename = f"{safe_work_product.replace(' ', '_')}_checklist.md"
 
-    markdown_lines = [f"# {checklist_model.work_product}\n"]
+    markdown_lines = [f"# {work_product}\n"]
 
     for idx, item in enumerate(checklist_model.checklist_items, start=1):
         markdown_lines.append(f"## Item {idx}: {item.title}\n")

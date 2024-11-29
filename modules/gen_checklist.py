@@ -6,7 +6,7 @@ from termcolor import colored
 from llm_services.models_checklist import ChecklistModel
 from llm_services.models_content import DescriptionModel
 from llm_services.prompts_checklist import prompt_generate_checklist
-from llm_services.prompts_context import context_messages
+from llm_services.prompts_context import prompt_context
 from llm_services.send_prompt import send_prompt
 
 from utils.save_markdown import save_checklist_to_markdown
@@ -55,7 +55,7 @@ def generate_checklists(dataframe, context=None):
             checklist = generate_wp_checklist(work_product, work_product_content, None)
         checklist_model = ChecklistModel.model_validate(checklist)
         # Save the checklist
-        save_checklist_to_markdown(checklist_model)
+        save_checklist_to_markdown(checklist_model, work_product)
         save_models(f"{work_product} checklist", checklist_model)
 
 
@@ -104,8 +104,9 @@ def generate_wp_checklist(work_product: str,
             messages_checklists.append(groups_message)
 
     if os.getenv("ADD_WP_CONTEXT") == "true" and context:
-        messages = context_messages(context, work_product)
-        messages_checklists.append(messages)
+        messages_context = prompt_context(context, work_product)
+        for message in messages_context:
+            messages_checklists.append(message)
 
     prompt = prompt_generate_checklist(work_product, checklists_work_product_content)
     message_checklist = {"role": "user", "content": prompt}

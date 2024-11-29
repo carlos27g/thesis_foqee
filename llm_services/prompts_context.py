@@ -134,67 +134,90 @@ def prompt_gen_uses(work_product, standards):
     )
     return prompt
 
-def context_messages(context: WorkProductContextModel, work_product: str):
+def prompt_context(context, work_product):
     messages = []
-    # Add introductory message
-    messages.append({
+    message_purpose = {
         "role": "user",
         "content": (
-            f"The following concepts are provided to help understand important definitions for the work product '{work_product}'. "
-            "Pay special attention to the disambiguation section, as it explains how critical terms in this context "
-            "can have multiple names or interpretations. Understanding these nuances will help you address ambiguity "
-            "effectively in the future tasks that will be provided."
+            f"**Purpose in ISO 26262:**\n"
+            f"The purpose of this work product in the context of ISO 26262 is as follows:\n{context.description.purpose.purpose_iso}\n"
+            f"**Purpose in Automotive SPICE:**\n"
+            f"The purpose of this work product in the context of Automotive SPICE is as follows:\n{context.description.purpose.purpose_aspice}\n"
         )
-    })
-    # Add Description-related messages
-    description = context.description
-    messages.append({
+    }
+    messages.append(message_purpose)
+
+    message_content = {
         "role": "user",
-        "content": f"The work product '{work_product}' has the following purposes: "
-                f"ISO 26262: {description.purpose.purpose_iso}, "
-                f"ASPICE: {description.purpose.purpose_aspice}."
-    })
-    messages.append({
+        "content": (
+            f"**Content:**\n"
+            f"This section outlines the necessary content for the work product:\n{context.description.content}\n"
+        )
+    }
+    messages.append(message_content)
+
+    message_input = {
         "role": "user",
-        "content": f"The content description of the work product '{work_product}' is: {description.content}"
-    })
-    messages.append({
+        "content": (
+            f"**Input:**\n"
+            f"This section describes the required inputs for the work product:\n{context.description.input}\n"
+        )
+    }
+    messages.append(message_input)
+
+    message_uses = {
         "role": "user",
-        "content": f"The input data for the work product '{work_product}' is: {description.input}"
-    })
-    messages.append({
-        "role": "user",
-        "content": f"The work product '{work_product}' is used for: {description.uses}"
-    })
-    # Add Concepts-related messages
-    concepts = context.concepts
-    # Add Terminology ISO terms
-    terminology_terms = concepts.terminology_iso.terms
-    for term in terminology_terms:
+        "content": (
+            f"**Uses:**\n"
+            f"This section explains the uses and applications of the work product:\n{context.description.uses}\n"
+        )
+    }
+    messages.append(message_uses)
+
+    # Consolidate Terminology Terms
+    terminology_terms = context.concepts.terminology_iso.terms
+    if terminology_terms:
+        terminology_content = f"In the context of the work product '{work_product}', the following glossary terms are defined:\n"
+        terminology_content += "\n".join([f"- '{term.term}': {term.definition}" for term in terminology_terms])
         messages.append({
             "role": "user",
-            "content": f"In the context of the work product '{work_product}', the glossary term '{term.term}' "
-                    f"is defined as: {term.definition}"
+            "content": terminology_content
         })
-    # Add Disambiguation entries
-    disambiguation_entries = concepts.disambiguation.entries
-    for entry in disambiguation_entries:
+
+    # Consolidate Disambiguation Entries
+    disambiguation_entries = context.concepts.disambiguation.entries
+    if disambiguation_entries:
+        disambiguation_content = (
+            f"In the work product '{work_product}', the following disambiguation concepts are defined:\n"
+            f"Use these concepts to understand how a single idea can be referred to by different names in ISO 26262 and ASPICE. "
+            f"This section also provides examples of their usage, helping to clarify their application.\n"
+            f"The concept names serve to unify the different terminologies, ensuring consistency for the tasks in this work product.\n")
+
+        for entry in disambiguation_entries:
+            disambiguation_content += (
+                f"\n- Concept: '{entry.concept}'\n"
+                f"  - Definition: {entry.definition}\n"
+                f"  - Purpose: {entry.purpose}\n"
+                f"  - Examples: {', '.join(entry.examples)}\n"
+                f"  - Elements: {', '.join(entry.elements)}\n"
+                f"  - Example elements: {', '.join(entry.example_elements)}\n"
+                f"  - ISO Terminology: {entry.terminology_iso26262}\n"
+                f"  - ASPICE Terminology: {entry.terminology_aspice}\n"
+            )
         messages.append({
             "role": "user",
-            "content": f"In the work product '{work_product}', the disambiguation concept '{entry.concept}' is defined as follows:\n"
-                    f"- Definition: {entry.definition}\n"
-                    f"- Purpose: {entry.purpose}\n"
-                    f"- Examples: {', '.join(entry.examples)}\n"
-                    f"- Elements: {', '.join(entry.elements)}\n"
-                    f"- Example elements: {', '.join(entry.example_elements)}\n"
-                    f"- ISO Terminology: {entry.terminology_iso26262}\n"
-                    f"- ASPICE Terminology: {entry.terminology_aspice}"
+            "content": disambiguation_content
         })
-    # Add Abbreviations
-    abbreviations = concepts.abbreviations.abbreviations
-    for abbreviation in abbreviations:
+
+    # Consolidate Abbreviations
+    abbreviations = context.concepts.abbreviations.abbreviations
+    if abbreviations:
+        abbreviations_content = f"In the work product '{work_product}', the following abbreviations are defined:\n"
+        abbreviations_content += "\n".join([f"- '{abbreviation.abbreviation}': {abbreviation.definition}" for abbreviation in abbreviations])
         messages.append({
             "role": "user",
-            "content": f"In the work product '{work_product}', the abbreviation '{abbreviation.abbreviation}' is defined as: {abbreviation.definition}"
+            "content": abbreviations_content
         })
+
     return messages
+
