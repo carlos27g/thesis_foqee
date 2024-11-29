@@ -7,7 +7,7 @@ Functions:
 """
 import os
 
-from llm_services.base_models import ChecklistModel
+from llm_services.models_checklist import ChecklistModel
 
 def save_checklist_to_markdown(checklist_model: ChecklistModel):
     """

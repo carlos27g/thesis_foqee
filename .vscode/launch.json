@@ -18,6 +18,9 @@
                 "MAX_TRIES_STRUCTURED_OUTPUT": "3",
                 "RESTRICT_WORK_PRODUCTS": "true", // When developig, use only two WP
                 "NEW_CHECKLISTS": "true",
+                "FILTER_REQUIREMENTS": "true", // Iteration 2: defautl is true
+                "EXTRACT_ISO_KNOWLEDGE": "true", // Iteration 2: defautl is true
+                "TOPIC_GROUPING": "true", // Iteration 2: defautl is true
             },
         }
     ]

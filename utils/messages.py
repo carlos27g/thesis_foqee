@@ -13,7 +13,9 @@ Functions:
 """
 import os
 
-from llm_services.base_models import ChecklistItem, ChecklistModel
+from llm_services.models_checklist import ChecklistItem, ChecklistModel
+from llm_services.models_content import TopicslistModel, DescriptionModel
+
 
 messages = []
 
@@ -29,13 +31,14 @@ def add_message(role, content, basemodel=None):
     messages.append(f"{role}: {content}\n")
     if role == "SYSTEM":
         messages.append("# -------------------------------------------------- #\n")
-
     save_messages(file_name)
 
 def classify_basemodel(basemodel):
     """Classify the base model into a specific functionality."""
     if issubclass(basemodel, (ChecklistItem, ChecklistModel)):
         return "checklist_generation"
+    if issubclass(basemodel, (TopicslistModel, DescriptionModel)):
+        return "content_segmentation"
     return "unclassified"
 
 def save_messages(file_name):
