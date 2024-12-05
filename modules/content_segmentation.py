@@ -156,7 +156,7 @@ def format_external_id_info(id_model) -> str:
         f"{id_model.subsubsection_number} found.")
 
 
-def group_by_topics(requriements_work_product: list[dict]) -> dict:
+def group_by_topics(requriements_work_product: list[dict], messages_context: None) -> dict:
     """
     Groups content by specified topics or categories.
 
@@ -169,7 +169,11 @@ def group_by_topics(requriements_work_product: list[dict]) -> dict:
     """
     prompt = prompt_generate_topics(requriements_work_product)
     message = {"role": "user", "content": prompt}
-    response_topics = send_prompt([message], TopicslistModel)
+    if messages_context:
+        messages_context.append(message)
+        response_topics = send_prompt(messages_context, TopicslistModel)
+    else:
+        response_topics = send_prompt([message], TopicslistModel)
     group_message_content = (
         "This work product can be grouped by these topics: \n"
         f"{response_topics.model_dump_json()}"

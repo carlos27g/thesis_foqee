@@ -96,18 +96,22 @@ def generate_wp_checklist(work_product: str,
             # Update the description with the filtered content
             requirement_info["Description"] = response.description
     messages_checklists = []
-
-    if os.getenv("TOPIC_GROUPING") == "true":
-        # Generate groups
-        print(colored("Grouping requirements by topics", 'green'))
-        groups_message = group_by_topics(checklists_work_product_content)
-        if groups_message:
-            messages_checklists.append(groups_message)
+    messages_context = []
 
     if os.getenv("ADD_WP_CONTEXT") == "true" and context:
         messages_context = prompt_context(context, work_product)
         for message in messages_context:
             messages_checklists.append(message)
+
+    if os.getenv("TOPIC_GROUPING") == "true":
+        # Generate groups
+        print(colored("Grouping requirements by topics", 'green'))
+        if context and messages_context:
+            groups_message = group_by_topics(checklists_work_product_content, messages_context)
+        else:
+            groups_message = group_by_topics(checklists_work_product_content, None)
+        if groups_message:
+            messages_checklists.append(groups_message)
 
     prompt = prompt_generate_checklist(work_product, checklists_work_product_content)
     message_checklist = {"role": "user", "content": prompt}
