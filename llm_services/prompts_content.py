@@ -4,10 +4,10 @@ the information of a requirement, extracting the ISO knowledge, and grouping top
 
 Functions:
 - prompt_filter_requirement: Generates a prompt for filtering and abstracting the content of a 
-    given requirement from a standard framework to aid developers in understanding compliance 
-    requirements.
+  given requirement from a standard framework to aid developers in understanding compliance 
+  requirements.
 - get_requirement_titles: Retrieves the titles for the specified part, clause, and section of the 
-    ISO 26262 standard.
+  ISO 26262 standard.
 """
 
 import os
@@ -20,6 +20,7 @@ def prompt_filter_requirement(requirement) -> str:
     """
     Generates a prompt for filtering and abstracting the content of a given requirement 
     from a standard framework to aid developers in understanding compliance requirements.
+    
     Args:
         requirement (dict): A dictionary containing details of the requirement, including:
             ISO26262:
@@ -33,7 +34,7 @@ def prompt_filter_requirement(requirement) -> str:
             - 'Work Product' (str): The work product associated with the requirement.
             - 'Description' (str): The description of the requirement.
             - 'external_knowledge' (str, optional): Any external references found in the 
-            description.
+              description (if ISO26262).
             ASPICE:
             - 'Standard Name' (str): The name of the standard framework.
             - 'Complete ID' (str): The full identifier of the requirement.
@@ -41,47 +42,50 @@ def prompt_filter_requirement(requirement) -> str:
             - 'Description' (str): The description of the requirement.
     Returns:
         str: A formatted prompt string for analyzing and abstracting the requirement content.
-             If the 'Standard Name' is not recognized, returns None.
+             If the 'Standard Name' is not recognized or required fields are missing, returns None.
     """
 
     prompt = (
         f"You are provided with a requirement from the **{requirement['Standard Name']}** "
         "standard framework. Your task is to analyze the description and external references "
-        "(if given) to filter and abstract their content to include only essential information.\n"
+        "(if given) to filter and abstract their content to include only essential information "
+        f"for the work product {requirement['Work Product']}.\n\n"
 
+        f"**Objective:**\n"
         "The goal is to return information that allows developers to understand what to do for "
         "compliance without having to read the guidelines. Therefore, mentioning any external "
-        "references is not allowed (No table numbers, clauses, ids).\n\n"
-    )
-    prompt += (
+        "references is not allowed (No table numbers, clauses, IDs).\n\n"
+
         "**Task Instructions:**\n"
         "1. **Analyze the provided requirement and any external references (if given).**\n"
         "2. **Filter the information** to extract only the key points relevant for compliance "
         "tracking.\n"
         "   - Focus on actionable items, obligations, and guidelines necessary for compliance.\n"
         "   - Disregard any irrelevant or redundant information.\n"
-        "   - Remove all the external references (IDs, clauses, tables).\n"
+        "   - Remove all external references (IDs, clauses, tables).\n"
         "3. **Filter the content** that addresses the following questions:\n"
-        "   - What documentation or evidence is needed to demonstrate compliance with this "
-        "standard?\n"
-        "   - What processes or procedures should be implemented to ensure ongoing compliance?\n"
-        "   - Is there any indication of how compliance should be monitored and maintained over " 
-        "time?\n"
+        "   - What are the essential criteria to evaluate the quality of the associated "
+        "work product?\n"
+        "   - What documentation or evidence is needed to demonstrate that the work product "
+        "complies with the standard's requirements?\n"
+        "   - Are there any specific attributes or characteristics of the work product that "
+        "should be verified or validated?\n"
         "4. **Ensure the content is based exclusively on the information provided** in the "
         "requirement and external references.\n"
         "   - Do not introduce information that is not present in the provided requirement.\n\n"
+
         "**Important Note:**\n"
         "- If the provided information does not contain sufficient details to address the "
-        "work product above, simply state: 'No actionable items could be identified based on the "
+        "work product, simply state: 'No actionable items could be identified based on the "
         "provided information.'\n\n"
     )
+
     if requirement['Standard Name'] == 'ISO 26262':
-        # Extract titles to enrich the prompt
         titles = get_requirement_titles(
             requirement['Standard Name'],
-            requirement['Part'],
-            requirement['Clause'],
-            requirement['Section']
+            requirement.get('Part'),
+            requirement.get('Clause'),
+            requirement.get('Section')
         )
         prompt += (
             f"**Requirement to Analyze:**\n"
@@ -101,6 +105,12 @@ def prompt_filter_requirement(requirement) -> str:
             f"- **Description:**\n"
             f"'{requirement['Description']}'\n\n"
         )
+        if 'external_knowledge' in requirement and requirement['external_knowledge']:
+            prompt += (
+                "**Note:**\n"
+                "External references for this ISO 26262 requirement can be found in previous "
+                "messages if available."
+            )
         return prompt
 
     if requirement['Standard Name'] == 'ASPICE':
@@ -121,17 +131,23 @@ def prompt_filter_requirement(requirement) -> str:
 def prompt_identify_table(requirement: dict) -> str:
     """
     Generates a prompt for extracting references to tables from a given ISO 26262 requirement.
+
     Args:
         requirement (dict): A dictionary containing details of the requirement, including:
-            - 'Standard Name': The name of the standard (e.g., 'ISO 26262').
-            - 'Part': The part number of the standard.
-            - 'Clause': The clause number of the standard.
-            - 'Section': The section number of the standard.
-            - 'Subsection': The subsection number of the standard.
-            - 'Subsubsection': The subsubsection number of the standard (if applicable).
-            - 'Complete ID': The full identifier of the requirement.
-            - 'Work Product': The work product associated with the requirement.
-            - 'Description': The description of the requirement.
+            - 'Standard Name' (str): The name of the standard (e.g., 'ISO 26262').
+            - 'Part' (str): The part number of the standard.
+            - 'Clause' (str): The clause number of the standard.
+            - 'Section' (str): The section number of the standard.
+            - 'Subsection' (str): The subsection number of the standard.
+            - 'Subsubsection' (str, optional): The subsubsection number of the standard.
+            - 'Complete ID' (str): The full identifier of the requirement.
+            - 'Work Product' (str): The work product associated with the requirement.
+            - 'Description' (str): The description of the requirement.
+
+    Returns:
+        str: A formatted prompt string to identify references to tables within the requirement 
+             description.
+             If the 'Standard Name' is not 'ISO 26262', returns None.
     """
 
     if requirement['Standard Name'] == 'ISO 26262':
@@ -141,63 +157,92 @@ def prompt_identify_table(requirement: dict) -> str:
             requirement['Clause'],
             requirement['Section']
         )
+
         prompt = (
-            "You are given a requirement from the ISO 26262 standard framework. Your task is to "
-            "analyze the description and identify any references to tables.\n\n"
+            "You are given a requirement from the ISO 26262 standard framework. "
+            "Your task is to analyze the requirement description and identify any references "
+            "to tables.\n\n"
+        )
+
+        prompt += (
+            "**Objective:**\n"
+            "Identify references to tables within the description to aid developers in locating "
+            "relevant tabular information.\n\n"
+        )
+
+        prompt += (
             "**Task Instructions:**\n"
             "1. **Identify references to tables:**\n"
             "   - Search the description for any references to tables.\n"
             "   - A table is referenced only if the keyword 'Table' is followed by a number "
             "(e.g., 'Table 3').\n"
-            "   - **Note:** References to figures, sections, or clauses are **not** tables.\n\n"
+            "   - **Note:** References to figures, sections, or clauses are **not** considered "
+            "tables.\n"
             "2. **For each table referenced, extract:**\n"
-            "   - **Standard Name:** 'ISO 26262' or 'ASPICE' (if mentioned; otherwise, use "
-            "'ISO 26262').\n"
-            "   - **Part Number:** If a part number is mentioned with the table, use that; "
-            "otherwise, use the part number from the requirement details.\n"
-            "   - **Table Number:** The integer number immediately following the word 'Table'.\n\n"
-            "3. **If multiple tables are referenced, list all of them following the format above."
-            "**\n\n"
+            "   - **Standard Name:** 'ISO 26262' (default for this requirement).\n"
+            "   - **Part Number:** If a part number is mentioned with the table, use it; "
+            "otherwise, "
+            "use the part number from the requirement details.\n"
+            "   - **Table Number:** The integer number immediately following the word 'Table'.\n"
+            "3. **List all identified tables:**\n"
+            "   - Include all references to tables in the format above.\n"
             "4. **If no table is referenced, return an empty result.**\n\n"
         )
+
+        # Expected Outcome
         prompt += (
-            "**Requirement to analyze:**\n"
+            "**Expected Outcome:**\n"
+            "Use the `IdentifyTablesModel` function tool to define and process the result:\n"
+            "- The tool should include a `tables` attribute containing a list of table details.\n"
+            "- Each table detail should include the `table_number` field, representing the "
+            "table's number.\n"
+        )
+
+        # Extra Information
+        prompt += (
+            "**Requirement to Analyze:**\n"
             f"- **Full ID:** {requirement['Complete ID']}\n"
             f"- **Standard:** {requirement['Standard Name']}\n"
             f"  - **Part {requirement['Part']}:** {titles.get('Part', 'N/A')}\n"
             f"    - **Clause {requirement['Clause']}:** {titles.get('Clause', 'N/A')}\n"
             f"      - **Section {requirement['Section']}:** {titles.get('Section', 'N/A')}\n"
-            f"        - **Subsection ** {requirement['Subsection']}\n"
+            f"        - **Subsection:** {requirement['Subsection']}\n"
         )
-        if pd.notna(requirement['Subsubsection']):
-            prompt += (
-                f"          - **Subsubsection :** {requirement['Subsubsection']}\n"
-            )
+        if 'Subsubsection' in requirement and pd.notna(requirement['Subsubsection']):
+            prompt += f"          - **Subsubsection:** {requirement['Subsubsection']}\n"
         prompt += (
             f"- **Work Product:** {requirement['Work Product']}\n"
             f"- **Description:**\n"
             f"'{requirement['Description']}'\n\n"
         )
+
         return prompt
+
     return None
 
 
-def prompt_identify_clause(requirement) -> str:
+def prompt_identify_clause(requirement: dict) -> str:
     """
     Generates a prompt for identifying references to external clauses in a given requirement 
     from the ISO 26262 standard framework.
+
     Args:
         requirement (dict): A dictionary containing details of the requirement. Expected keys are:
-            - 'Standard Name': The name of the standard (e.g., 'ISO 26262').
-            - 'Part': The part number of the standard.
-            - 'Clause': The clause number of the standard.
-            - 'Section': The section number of the standard.
-            - 'Subsection': The subsection number of the standard.
-            - 'Subsubsection': The subsubsection number of the standard (optional).
-            - 'Complete ID': The complete identifier of the requirement.
-            - 'Work Product': The work product associated with the requirement.
-            - 'Description': The description of the requirement.
-   """
+            - 'Standard Name' (str): The name of the standard (e.g., 'ISO 26262').
+            - 'Part' (str): The part number of the standard.
+            - 'Clause' (str): The clause number of the standard.
+            - 'Section' (str): The section number of the standard.
+            - 'Subsection' (str): The subsection number of the standard.
+            - 'Subsubsection' (str, optional): The subsubsection number of the standard.
+            - 'Complete ID' (str): The complete identifier of the requirement.
+            - 'Work Product' (str): The work product associated with the requirement.
+            - 'Description' (str): The description of the requirement.
+
+    Returns:
+        str: A formatted prompt string to identify references to clauses within the requirement 
+             description.
+             If the 'Standard Name' is not 'ISO 26262', returns None.
+    """
 
     if requirement['Standard Name'] == 'ISO 26262':
         titles = get_requirement_titles(
@@ -206,50 +251,81 @@ def prompt_identify_clause(requirement) -> str:
             requirement['Clause'],
             requirement['Section']
         )
+
+        # Introduction
         prompt = (
-            "You are given a requirement from the ISO 26262 standard framework. Your task is to "
-            "analyze the description and identify any references to external clauses.\n\n"
+            "You are given a requirement from the ISO 26262 standard framework. "
+            "Your task is to analyze the requirement description and identify any references "
+            "to external clauses.\n\n"
+        )
+
+        # Objective
+        prompt += (
+            "**Objective:**\n"
+            "Identify references to clauses within the description to ensure accurate "
+            "tracking of related information.\n\n"
+        )
+
+        # Task Instructions
+        prompt += (
             "**Task Instructions:**\n"
             "1. **Identify references to clauses:**\n"
             "   - Search the description for any references to clauses.\n"
             "   - A clause is referenced only if the keyword 'Clause' is followed by a number.\n"
-            "   - **Note:** IDs in the format 'Integer.Integer' (e.g., '2.3') or 'Integer.Integer."
-            "Integer' (e.g., 1.2.3.) are **not** clauses but IDs and they will be re.\n"
-            "   - **Note:** References to tables, figures, or sections are **not** clauses "
-            "either.\n"
+            "   - **Note:** IDs in the format 'Integer.Integer' (e.g., '2.3') or "
+            "'Integer.Integer.Integer' (e.g., '1.2.3') are **not** clauses but IDs and should "
+            "be ignored.\n"
+            "   - **Note:** References to tables, figures, or sections are **not** clauses.\n\n"
             "2. **For each clause referenced, extract:**\n"
-            "   - **Standard Name:** 'ISO 26262' or 'ASPICE' (if mentioned; otherwise, use "
-            "'ISO 26262').\n"
-            "   - **Part Number:** If a part number is mentioned with the clause, use that; "
+            "   - **Standard Name:** 'ISO 26262' (default for this requirement).\n"
+            "   - **Part Number:** If a part number is mentioned with the clause, use it; "
             "otherwise, use the part number from the requirement details.\n"
-            "   - **Clause Number:** The integer number immediately following the word 'clause'.\n"
-            "3. **If multiple clauses are referenced, list all of them.**\n\n"
+            "   - **Clause Number:** The integer number immediately following the word "
+            "'Clause'.\n\n"
+            "3. **List all identified clauses:**\n"
+            "   - Include all references to clauses in the format above.\n\n"
             "4. **If no clause is referenced, return an empty result.**\n\n"
-            "**Requirement Details:**\n"
+        )
+
+        # Expected Outcome
+        prompt += (
+            "**Expected Outcome:**\n"
+            "Use the `IdentifyClausesModel` function tool to define and process the result:\n"
+            "- The tool should include a `clauses` attribute containing a list of clause details.\n"
+            "- Each clause detail should follow the `ClauseModel` structure, including:\n"
+            "  - `clause_number`: The number of the clause as specified in the requirement "
+            "description.\n"
+        )
+
+        # Extra Information
+        prompt += (
+            "**Requirement to Analyze:**\n"
             f"- **Full ID:** {requirement['Complete ID']}\n"
             f"- **Standard:** {requirement['Standard Name']}\n"
-            f"  - **Part {requirement['Part']}:** {titles['Part']}\n"
-            f"    - **Clause {requirement['Clause']}:** {titles['Clause']}\n"
-            f"      - **Section {requirement['Section']}:** {titles['Section']}\n"
+            f"  - **Part {requirement['Part']}:** {titles.get('Part', 'N/A')}\n"
+            f"    - **Clause {requirement['Clause']}:** {titles.get('Clause', 'N/A')}\n"
+            f"      - **Section {requirement['Section']}:** {titles.get('Section', 'N/A')}\n"
             f"        - **Subsection:** {requirement['Subsection']}\n"
         )
-        if pd.notna(requirement['Subsubsection']):
-            prompt += (
-                f"          - **Subsubsection:** {requirement['Subsubsection']}\n"
-            )
+        if 'Subsubsection' in requirement and pd.notna(requirement['Subsubsection']):
+            prompt += f"          - **Subsubsection:** {requirement['Subsubsection']}\n"
         prompt += (
             f"- **Work Product:** {requirement['Work Product']}\n"
             f"- **Description:**\n"
             f"'{requirement['Description']}'\n\n"
         )
+
         return prompt
+
     return None
 
 
-def prompt_identify_external_id(requirement) -> str:
+
+def prompt_identify_external_id(requirement: dict) -> str:
     """
     Generates a detailed prompt for identifying external references within a requirement 
     from the ISO 26262 standard framework.
+
     Args:
         requirement (dict): A dictionary containing details of the requirement, including:
             - 'Standard Name' (str): The name of the standard (e.g., 'ISO 26262').
@@ -261,6 +337,10 @@ def prompt_identify_external_id(requirement) -> str:
             - 'Complete ID' (str): The complete ID of the requirement.
             - 'Work Product' (str): The work product associated with the requirement.
             - 'Description' (str): The description of the requirement.
+
+    Returns:
+        str: A formatted prompt string to identify references to external IDs within the 
+             requirement description. If the 'Standard Name' is not 'ISO 26262', returns None.
     """
 
     if requirement['Standard Name'] == 'ISO 26262':
@@ -270,85 +350,85 @@ def prompt_identify_external_id(requirement) -> str:
             requirement['Clause'],
             requirement['Section']
         )
+
         prompt = (
-            "You will be provided with a requirement from the **ISO 26262** standard "
-            "framework at the end.\n"
+            "You are given a requirement from the ISO 26262 standard framework. "
+            "Your task is to analyze the description and identify any references to external "
+            "IDs.\n\n"
+        )
+
+        prompt += (
+            "**Objective:**\n"
+            "Extract references to external IDs within the description to ensure accurate "
+            "tracking of related information.\n\n"
+        )
+
+        prompt += (
             "**Task Instructions:**\n"
-            "1. **Identify external references to other sections and subsections** within the "
-            "description of the requirement.\n"
-            "   - An external ID from **ISO 26262** always comes in the form of Integer.Integer "
-            "(Clause.Section) or Integer.Integer.Integer (Clause.Section.Subsection).\n"
-            "   - Sometimes a fourth number is added (Clause.Section.Subsection.Integer). Add this "
-            "last number to the 'Subsection_number'.\n"
-            "   - **'2018' or numbers greater than '999' are the version of the Guidelines and not "
-            "part of the ID format above.\n"
-            "   - **Do not extract references that only mention 'Clause' followed by a number "
-            "(e.g., 'Clause 9' or 'Clause 7'), as these refer to the clause in general and not a "
-            "specific section or subsection.**\n"
-            "   - **Important:** **Do not include external IDs where the section number is zero; "
-            "these are considered references to clauses and should be ignored.**\n"
-            "   - **Note:** **External IDs may appear on their own, without any preceding words or "
-            "identifiers or they may follow phrases like 'in accordance with', 'according "
-            "to', etc.**\n"
-            "2. For each external ID found, extract the following information:\n"
-            "   **Standard Framework:** 'ISO 26262'.\n"
-            "   **Part Number:** The part number where the external ID is located. If none is "
-            "mentioned, use the one from the requirement details.\n"
-            "   **Clause Number:** The clause number where the external ID is located. If none is "
-            "mentioned, use the one from the requirement details.\n"
-            "   **Section Number:** The full section number where the external ID is located.\n"
-            "   - **Important:** **'Section Number' is never zero '0'. Ignore any references that "
-            "result in a section number of zero.**\n"
-            "   **Subsection Number:** The subsection number where the external ID is located, if "
-            "applicable; otherwise, return zero.\n"
-            "3. **If multiple external IDs are referenced, list all of them.**\n\n"
-            "4. **If no external IDs are referenced, return an empty list or do not return "
-            "anything.**\n\n"
-            "5. **Ensure the accuracy of the extracted information from the description of the "
-            "requirement; only valid external IDs matching the specified formats above are "
-            "extracted.**\n"
+            "1. **Identify external references to other sections and subsections:**\n"
+            "   - External IDs are in the format Integer.Integer (Clause.Section) or Integer."
+            "Integer.Integer (Clause.Section.Subsection).\n"
+            "   - A fourth number (Clause.Section.Subsection.Integer) may appear; include this as "
+            "the 'Subsection_number'.\n"
+            "   - Ignore references like 'Clause 9' or 'Clause 7' that refer to a clause in "
+            "general.\n"
+            "   - Ignore IDs where the section number is zero (e.g., '2.0').\n\n"
+            "2. **For each external ID found, extract:**\n"
+            "   - **Standard Framework:** Always 'ISO 26262'.\n"
+            "   - **Part Number:** If specified; otherwise, use the part number from the "
+            "requirement.\n"
+            "   - **Clause Number:** If specified; otherwise, use the clause number from the "
+            "requirement.\n"
+            "   - **Section Number:** The section number of the external ID (must not be zero).\n"
+            "   - **Subsection Number:** If applicable; otherwise, return zero.\n\n"
+            "3. **List all identified external IDs.**\n"
+            "4. **If no external IDs are found, return an empty list.**\n\n"
         )
+
         prompt += (
-            "**Example:**\n"
-            "**Input:**\n"
-            "- **Full ID:** 26262-6:2018-6.4.2\n"
-            "- **Description:** '... in accordance with Clause 9 and 2.4.4 ...'\n"
-            "**Expected Output:**\n"
-            "- **External IDs found:**\n"
-            "  1. **Standard Framework:** ISO 26262\n"
-            "     - **Part Number:** 6\n"
-            "     - **Clause Number:** 2\n"
-            "     - **Section Number:** 4\n"
-            "     - **Subsection Number:** 4\n"
-            "- **Note:** The reference to 'Clause 9' is not included because it refers "
-            "to a clause in general and not a specific section or subsection. Any reference "
-            "resulting in a section number of zero is ignored.\n\n"
+            "**Expected Outcome:**\n"
+            "Use the `IdentifyExternalIdsModel` function tool to define and process the result:\n"
+            "- The tool should include an `external_ids` attribute containing a list of external "
+            "ID details.\n"
+            "- Each external ID detail should follow the `RequirementIdModel` structure, "
+            "including:\n"
+            "  - `part_number`: The part number of the external ID.\n"
+            "  - `clause_number`: The clause number of the external ID.\n"
+            "  - `section_number`: The section number of the external ID.\n"
+            "  - `subsection_number`: The subsection number of the external ID.\n"
+            "  - `subsubsection_number`: The subsubsection number of the external ID "
+            "(if applicable).\n"
+            "- If no external IDs are referenced, the `external_ids` attribute should be an empty "
+            "list.\n\n"
         )
+
         prompt += (
-            f"**Requirement to analyze:**\n"
+            "**Requirement to Analyze:**\n"
             f"- **Full ID:** {requirement['Complete ID']}\n"
             f"- **Standard:** {requirement['Standard Name']}\n"
             f"  - **Part {requirement['Part']}:** {titles.get('Part', 'N/A')}\n"
             f"    - **Clause {requirement['Clause']}:** {titles.get('Clause', 'N/A')}\n"
             f"      - **Section {requirement['Section']}:** {titles.get('Section', 'N/A')}\n"
-            f"        - **Subsection :** {requirement['Subsection']}\n"
+            f"        - **Subsection:** {requirement['Subsection']}\n"
         )
-        if pd.notna(requirement['Subsubsection']):
-            prompt += (
-                f"          - **Subsubsection :** {requirement['Subsubsection']}\n"
-            )
+        if 'Subsubsection' in requirement and pd.notna(requirement['Subsubsection']):
+            prompt += f"          - **Subsubsection:** {requirement['Subsubsection']}\n"
         prompt += (
             f"- **Work Product:** {requirement['Work Product']}\n"
             f"- **Description:**\n"
             f"'{requirement['Description']}'\n\n"
         )
+
         return prompt
+
     return None
 
 
-def create_clause_summary_prompt(clause_model: ClauseModel, clause_requirements: pd) -> str:
+def create_clause_summary_prompt(clause_model: ClauseModel,
+                                 clause_requirements: pd.DataFrame) -> str:
     """
     Generates a prompt for summarizing a specific clause from a standard document.
+
     Args:
         clause_model: An object containing details about the clause, including:
             - standard_name (str): The name of the standard.
@@ -358,6 +438,9 @@ def create_clause_summary_prompt(clause_model: ClauseModel, clause_requirements:
                              row representing a requirement and columns:
             - 'ID' (str): The identifier of the requirement.
             - 'Description' (str): The description of the requirement.
+
+    Returns:
+        str: A formatted prompt string to summarize the clause.
     """
 
     titles = get_requirement_titles(
@@ -365,64 +448,121 @@ def create_clause_summary_prompt(clause_model: ClauseModel, clause_requirements:
         part=clause_model.part_number,
         clause=clause_model.clause_number,
     )
+
     clause_info = ""
     for _, row in clause_requirements.iterrows():
         clause_info += (
             f"- **Requirement ID:** {row['ID']}\n"
             f"  - **Description:** {row['Description']}\n\n"
         )
+
     prompt = (
         f"You are provided with information regarding **Clause {clause_model.clause_number}** "
         f"of the **{clause_model.standard_name}** standard.\n\n"
+
+        f"**Objective:**\n"
+        f"- Summarize the key concepts, instructions, and guidelines presented in Clause "
+        f"{clause_model.clause_number}.\n\n"
+
         f"**Clause Details:**\n"
         f"- **Standard:** {clause_model.standard_name}\n"
         f"  - **Part {clause_model.part_number}:** {titles['Part']}\n"
-        f"    - **Clause {clause_model.clause_number}:** {titles['Clause']}\n"
+        f"    - **Clause {clause_model.clause_number}:** {titles['Clause']}\n\n"
+
         f"**Requirements Within the Clause:**\n"
         f"{clause_info}"
+
         f"**Task Instructions:**\n"
-        f"Please provide a summary of Clause {clause_model.clause_number} that includes:\n"
-        f"- The key concepts presented in the clause.\n"
-        f"- Instructions or guidelines for compliance.\n\n"
+        f"1. Identify and summarize the key concepts and guidelines within Clause "
+        f"{clause_model.clause_number}.\n"
+        f"2. Highlight instructions or recommendations necessary for compliance.\n\n"
         f"**Guidelines for the Summary:**\n"
         f"- Use clear and concise language.\n"
         f"- Present the information in bullet points or numbered lists for readability.\n"
-        f"- Focus on the most critical aspects that are essential for understanding and "
-        f"compliance.\n\n"
+        f"- Focus on critical aspects essential for understanding and compliance.\n\n"
     )
+
     return prompt
+
 
 
 # ----------------- Prompt topics ----------------- #
 def prompt_generate_topics(requirements_work_product: list[dict]) -> str:
     """
     Generates a prompt for grouping content by specified topics or categories.
+
     Args:
-        requirements_work_product (list): The data to be grouped.
+        requirements_work_product (list): A list of dictionaries, where each dictionary contains:
+            - 'Complete ID' (str): The unique identifier of the requirement.
+            - 'Description' (str): The detailed description of the requirement.
+
     Returns:
         str: A formatted prompt string for grouping content by topics or categories.
     """
 
+    # Introduction
     prompt = (
         "You are tasked with grouping the provided requirements by specified topics or categories "
         "to facilitate the organization and understanding of the content.\n\n"
+    )
+
+    # Objective
+    prompt += (
+        "**Objective:**\n"
+        "- Group requirements into distinct topics or categories based on shared themes or "
+        "characteristics.\n"
+        "- If there is context in the messages from before, consider any disambiguating terms "
+        "or information "
+        "provided to ensure the topics are as precise as possible.\n\n"
+    )
+
+    # Task Instructions
+    prompt += (
         "**Task Instructions:**\n"
         "1. **Review the provided requirements** to identify common themes or categories.\n"
         "2. **Group the requirements** based on shared characteristics or topics.\n"
         "3. **Create a list of topics** that represent the grouped requirements.\n"
         "4. **Assign each requirement** to the corresponding topic or category.\n"
         "5. **Ensure each topic is distinct** and covers a specific aspect of the requirements.\n"
-        "6. **Provide a brief description** for each topic to summarize the grouped "
-        "requirements.\n\n"
-        "**Content to Group:**\n"
+        "6. **Provide a brief description** for each topic to summarize the grouped requirements.\n"
+        "7. **Incorporate previous context** (if available) to resolve ambiguities and refine "
+        "the topics.\n\n"
     )
-    for _ , req in requirements_work_product.items():
+
+    # Content to Group
+    prompt += "**Content to Group:**\n"
+    for _, req in requirements_work_product.items():
         prompt += (
             f"- **Requirement ID:** {req['Complete ID']}\n"
             f"  - **Description:** {req['Description']}\n"
         )
-    prompt += ("\nIt is allowed to repeat requirements in different topics if they are relevant.\n")
+
+    # Expected Outcome
+    prompt += (
+        "\n**Expected Outcome:**\n"
+        "Use the `TopicslistModel` function tool to define and process the result:\n"
+        "- The tool should include a `topics` attribute containing a list of grouped topics.\n"
+        "- Each topic should follow the `TopicModel` structure, including:\n"
+        "  - `topic`: A brief title for the topic that represents a shared characteristic "
+        "or theme.\n"
+        "  - `ids`: A list of requirement IDs that belong to this topic.\n"
+        "- Requirements can belong to multiple topics if relevant.\n"
+        "- Ensure each topic is distinct and provides a clear representation of its grouped "
+        "requirements.\n"
+        "- Consider disambiguating terms from previous messages or context when identifying "
+        "topics.\n\n"
+    )
+
+    # Additional Notes
+    prompt += (
+        "**Additional Notes:**\n"
+        "- Requirements can be repeated across multiple topics if applicable.\n"
+        "- Focus on improving clarity and usability for end-users by grouping logically and "
+        "concisely.\n"
+    )
+
     return prompt
+
 
 # ----------------- Helper method ----------------- #
 def get_requirement_titles(standard, part, clause, section=None) -> dict:

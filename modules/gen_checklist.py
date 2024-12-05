@@ -50,7 +50,8 @@ def generate_checklists(dataframe, context=None):
 
         # Generate the checklist for the work product
         if context:
-            checklist = generate_wp_checklist(work_product, work_product_content, context[work_product])
+            checklist = generate_wp_checklist(work_product, work_product_content, 
+                                              context[work_product])
         else:
             checklist = generate_wp_checklist(work_product, work_product_content, None)
         checklist_model = ChecklistModel.model_validate(checklist)

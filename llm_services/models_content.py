@@ -1,8 +1,20 @@
 """
 This module contains data validation classes used for structured outcomes generation with the LLM
-for the step of extracting the ISO26262 external knowledge retrieval. 
-These classes facilitate the creation and organization of checklist items, ensuring consistency and
-structured data for downstream processing.
+for the step of extracting the ISO26262 external knowledge retrieval.
+
+Classes:
+- DescriptionModel
+- TopicModel
+- TopicslistModel
+- NoInfoModel
+- IdentifyInformationModel
+- TableModel
+- IdentifyTablesModel
+- ClauseModel
+- ClauseSummaryModel
+- IdentifyClausesModel
+- RequirementIdModel
+- IdentifyExternalIdsModel
 """
 
 from typing import Literal

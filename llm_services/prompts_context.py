@@ -1,148 +1,421 @@
+"""
+This script provides a collection of methods to generate prompts for generating the context of 
+work products. 
+
+Methods:
+- prompt_terminology_iso_extraction(work_product: str, terminology_iso: list[dict]) -> str:
+  Generates a prompt to extract ISO 26262 terminology relevant to the given work product.
+- prompt_disambiguation_extraction(work_product: str, disambiguations: list[dict]) -> str:
+  Creates a prompt for filtering disambiguation concepts tied to ISO 26262.
+- prompt_abbreviations_extraction(work_product: str, abbreviations: list[dict]) -> str:
+  Constructs a prompt to identify abbreviations relevant to the work product.
+- prompt_gen_purpose(work_product: str) -> str:
+  Generates a prompt explaining the purpose of a work product in ISO 26262 and ASPICE.
+- prompt_gen_uses(work_product: str, standards: pd.DataFrame) -> str:
+  Creates a prompt describing the use cases of a work product based on standards.
+- prompt_gen_input(work_product: str, standards: pd.DataFrame) -> str:
+  Develops a prompt to identify necessary inputs for the work product's compliance.
+- prompt_gen_content(work_product: str, standards: pd.DataFrame) -> str:
+  Produces a prompt defining required content for the work product under compliance standards.
+- prompt_context(context: WorkProductContextModel, work_product: str) -> list[dict]:
+  Consolidates context and generates a comprehensive prompt for the work product.
+
+"""
+
+import pandas as pd
+
 from llm_services.models_context import WorkProductContextModel
 
 # ----------------- For Contextualization of WP ----------------- #
-def prompt_glossary_definition(term, definition) -> str:
-    prompt = (
-        f"You are tasked with defining the term '**{term}**' within the context of the ISO 26262 standard for functional safety in automotive systems.\n\n"
-        f"**Task Instructions:**\n"
-        f"1. **Provide a clear and precise definition** of '**{term}**' based on its use within ISO 26262.\n"
-        f"2. **Focus on automotive safety** to ensure the definition is relevant to ISO 26262 applications.\n"
-        f"3. **Extract any essential details** from the provided content to form a complete understanding of the term, using domain knowledge as needed.\n\n"
-        f"**Provided Content:**\n"
-        f"'{definition}'\n\n"
-        f"**Note:** There is no need to include an introduction that repeats the term's name or the context of ISO 26262.\n"
-    )
-    return prompt
+def prompt_terminology_iso_extraction(work_product: str, terminology_iso: list[dict]) -> str:
+    """
+    Extracts ISO 26262 terms relevant to the given work product.
 
-def prompt_terminology_iso_extraction(work_product, terminology_iso) -> str:
+    Args:
+        work_product (str): The target work product for extraction.
+        terminology_iso (list): A list of dictionaries, where each dictionary contains:
+            - 'term' (str): The name of the term.
+            - 'definition' (str): The description of the term.
+
+    Returns:
+        str: A formatted prompt string.
+    """
+
     prompt = (
-        f"You are provided with a list of terminology from the ISO 26262 standard framework. Your task is to select terms directly relevant to the work product '**{work_product}**'.\n\n"
-        f"**Task Instructions:**\n"
-        f"**Focus on Direct Relevance:** Identify only those terms that explicitly relate to the creation, definition, or management of the work product '**{work_product}**'.\n"
-        f"   - Examples of directly relevant terms include concepts that describe work product structure, content, management processes, or evaluation criteria.\n"
-        f"   - Avoid including terms that are only tangentially related, such as general processes, unrelated testing methods, or implementation-specific details.\n\n"
-        f"**Output Format:**\n"
-        f"Please return the extracted terms in the following format:\n"
-        f"- A list of objects, where each object includes:\n"
-        f"  - 'id': The ID of the term in the glossary\n"
-        f"  - 'term': The term in the glossary\n"
-        f"  - 'definition': The description of the term in the glossary\n"
-        f"If no relevant term is found, return nothing.\n\n"
-        f"**Note:** Use the function 'TermListModel' to return the output. Ensure all structured data is passed into the function, and no other action is taken.\n"
-        f"**Note:** Remove all references to external IDs or clauses from the definitions. Only mentions of ISO or ASPICE as frameworks are permitted.\n\n"
-        f"**Terminology List:**\n"
+        f"You are tasked with identifying terms from ISO 26262 terminology that are directly "
+        f"relevant to the work product '**{work_product}**'.\n\n"
     )
+
+    prompt += (
+        "**Task Instructions:**\n"
+        "1. Select terms explicitly tied to creating, defining, or managing "
+        f"'**{work_product}**'.\n"
+        "2. Include terms related to structure, content, or evaluation criteria.\n"
+        "3. Exclude terms that are only tangentially related, such as general processes or "
+        "unrelated methods.\n\n"
+    )
+
+    prompt += (
+        "**Output Format:**\n"
+        "- Return a list of objects, where each object includes:\n"
+        "  - 'term': The name of the term.\n"
+        "  - 'definition': The description of the term.\n\n"
+    )
+
+    prompt += (
+        "**Expected Outcome:**\n"
+        "Use the `TermListModel` function tool to define and process the result:\n"
+        "- The tool should include a `terms` attribute containing a list of relevant terms.\n"
+        "- Each term should follow the `TermModel` structure, including:\n"
+        "  - `term`: The name of the term in the glossary.\n"
+        "  - `definition`: The description of the term in the glossary.\n"
+        f"- Ensure only directly relevant terms to the work product '**{work_product}**' are "
+        "included.\n"
+    )
+
+    prompt += (
+        "**Notes:**\n"
+        "- Ensure the extracted terms are directly relevant to the work product.\n"
+        "- Remove references to external IDs or clauses from definitions.\n"
+        "- If no relevant terms are found, return an empty result.\n\n"
+    )
+
+    prompt += "**Terminology List:**\n"
     for i, item in enumerate(terminology_iso):
-        # Access each field within the dictionary
-        term = item.get("term")
-        definition = item.get("definition")
-        # Append each entry to the prompt
+        term = item.get("term", "N/A")
+        definition = item.get("definition", "N/A")
         prompt += (
-            f"  - **Term {i}:** {term}\n"
+            f"  - **Term {i + 1}:** {term}\n"
             f"  - **Definition:** {definition}\n\n"
         )
+
     return prompt
-def prompt_disambiguation_extraction(work_product, disambiguations) -> str:
+
+
+def prompt_disambiguation_extraction(work_product: str, disambiguations: list[dict]) -> str:
+    """
+    Generates a prompt for extracting disambiguations relevant to the given work product.
+
+    Args:
+        work_product (str): The target work product for extraction.
+        disambiguations (list): A list of dictionaries, where each dictionary contains:
+            - 'concept' (str): The concept being disambiguated.
+            - 'definition' (str): The definition of the concept.
+            - 'purpose' (str): The purpose of the concept.
+            - 'examples' (list[str]): Examples demonstrating the concept.
+            - 'elements' (list[str]): Related elements of the concept.
+            - 'example_elements' (list[str]): Example elements of the concept.
+            - 'terminology_iso26262' (str): ISO 26262-related terminology for the concept.
+            - 'terminology_aspice' (str): ASPICE-related terminology for the concept.
+
+    Returns:
+        str: A formatted prompt string.
+    """
+
     prompt = (
-        f"**Introduction**\n"
-        f"You are an expert in ISO 26262 and ASPICE guidelines. I have a disambiguation table where each row represents a concept and its attributes, including its terminology in ISO 26262 and ASPICE. These concepts help distinguish terms, definitions, and purposes across the frameworks.\n"
-        f"Some rows may not contain information for ISO 26262 or ASPICE terminology, which indicates either:\n"
-        f"1. The concept is not explicitly mentioned or used in that framework, or\n"
-        f"2. The same name is used across frameworks.\n\n"
-        f"Your task is to filter the relevant concepts for the work product: {work_product}. Use the provided data to determine the relevance of each concept.\n\n"
-        
-        f"**Tasks**\n"
-        f"1. Review the disambiguation table row by row.\n"
-        f"2. Identify concepts that meet any of the following criteria:\n"
-        f"   - Have explicit terminology linked to the requested work product: {work_product}, in the context of ISO 26262 and ASPICE.\n"
-        f"   - Are fundamental or commonly used across frameworks, even if no explicit connection is visible.\n"
-        f"   - Use the other attributes to assess if they are linked to the work product.\n"
-        f"3. Exclude concepts that are irrelevant to the requested {work_product} unless they are widely applicable.\n"
-        f"**Note:** Use the function 'DisambiaguationModel' to process the structured JSON output. Ensure all structured data is passed into the function, and no other action is taken.\n"
-        f"**Note:** If any of the parameters of DisambiguationModel is not available, return 'NA'. \n"
-        f"**Data**\n"
-        f"Here is the disambiguation table:\n"
+        f"You are tasked with filtering relevant disambiguations for '**{work_product}**' "
+        "from the provided table.\n\n"
     )
-    # Iterate through disambiguations and format them
+
+    prompt += (
+        "**Task Instructions:**\n"
+        "1. Identify concepts explicitly tied to ISO 26262 and ASPICE for the work product.\n"
+        "2. Include commonly used or fundamental terms where relevance is evident.\n"
+        "3. Exclude unrelated concepts unless they have wide applicability across the domain.\n\n"
+    )
+
+    prompt += (
+        "**Output Format:**\n"
+        "Use the `DisambiguationModel` function tool to return structured JSON:\n"
+        "- The output should include an `entries` attribute containing a list of disambiguation "
+        "entries.\n"
+        "- Each entry should follow the `DisambiguationEntryModel` structure, including:\n"
+        "  - `concept`: The concept being disambiguated.\n"
+        "  - `definition`: The definition of the concept.\n"
+        "  - `purpose`: The purpose of the concept.\n"
+        "  - `examples`: Examples demonstrating the concept.\n"
+        "  - `elements`: Related elements of the concept.\n"
+        "  - `example_elements`: Example elements of the concept.\n"
+        "  - `terminology_iso26262`: ISO 26262-related terminology for the concept.\n"
+        "  - `terminology_aspice`: ASPICE-related terminology for the concept.\n"
+    )
+
+    prompt += "**Disambiguation Table:**\n"
     for row in disambiguations:
         prompt += (
-            f"{'{' + '  '}\n"
-            f'  "concept": "{row.get("concept")}",\n'
+            "{\n"
+            f'  "concept": "{row.get("concept", "NA")}",\n'
             f'  "definition": "{row.get("definition", "NA")}",\n'
             f'  "purpose": "{row.get("purpose", "NA")}",\n'
-            f'  "examples": {row.get("examples", "NA")},\n'
-            f'  "elements": {row.get("elements", "NA")},\n'
-            f'  "example_elements": {row.get("example_elements", "NA")},\n'
+            f'  "examples": {row.get("examples", "[]")},\n'
+            f'  "elements": {row.get("elements", "[]")},\n'
+            f'  "example_elements": {row.get("example_elements", "[]")},\n'
             f'  "terminology_iso26262": "{row.get("terminology_iso26262", "NA")}",\n'
             f'  "terminology_aspice": "{row.get("terminology_aspice", "NA")}"\n'
-            f"{'}'}\n\n"
+            "}\n\n"
         )
-    
+
     return prompt
-def prompt_abbreviations_extraction(work_product, abbreviations) -> str:
+
+
+def prompt_abbreviations_extraction(work_product: str, abbreviations: list[dict]) -> str:
+    """
+    Generates a prompt for extracting relevant abbreviations for a given work product.
+
+    Args:
+        work_product (str): The target work product for abbreviation extraction.
+        abbreviations (list): A list of dictionaries, where each dictionary contains:
+            - 'abbreviation' (str): The abbreviation to extract.
+            - 'definition' (str): The explanation or meaning of the abbreviation.
+
+    Returns:
+        str: A formatted prompt string.
+    """
+
     prompt = (
-        f"You are tasked with filtering the abbreviations relevant to the work product '**{work_product}**' from the provided list.\n\n"
-        f"**Task Instructions:**\n"
-        f"1. **Review the list of abbreviations** to identify those that are directly related to the work product '**{work_product}**'.\n"
-        f"2. **Extract the relevant abbreviations** and provide a brief explanation of each abbreviation's meaning.\n"
-        f"**Note:** Use the function 'AbbreviationListModel' to process the structured JSON output. Ensure all structured data is passed into the function, and no other action is taken.\n"
-        f"**Note:** Remove all references to external IDs or clauses from the definitions. Only mentions of ISO or ASPICE as frameworks are permitted.\n\n"
-        f"**Abbreviations List:**\n"
+        f"You are tasked with identifying abbreviations relevant to the work product "
+        f"'**{work_product}**'.\n\n"
     )
+
+    prompt += (
+        "**Task Instructions:**\n"
+        f"1. Identify abbreviations directly tied to the creation, management, or evaluation of "
+        f"'**{work_product}**'.\n"
+        "2. Provide explanations or definitions for each relevant abbreviation.\n"
+        "3. Exclude abbreviations that are only tangentially related or irrelevant to the work "
+        "product.\n\n"
+    )
+
+    prompt += (
+        "**Output Format:**\n"
+        "Use the `AbbreviationListModel` function tool to define and process the result:\n"
+        "- The output should include an `abbreviations` attribute containing a list of abbreviation "
+        "entries.\n"
+        "- Each entry should follow the `AbbreviationModel` structure, including:\n"
+        "  - `abbreviation`: The abbreviation.\n"
+        "  - `definition`: The explanation or meaning of the abbreviation.\n"
+    )
+
+    prompt += "**Abbreviation List:**\n"
     for item in abbreviations:
+        abbreviation = item.get("abbreviation", "N/A")
+        definition = item.get("definition", "N/A")
         prompt += (
-        f"- **Abbreviation:** {item['abbreviation']}\n"
-        f"- **Definition:** {item['definition']}\n\n"
+            f"- **Abbreviation:** {abbreviation}\n"
+            f"- **Definition:** {definition}\n\n"
         )
-    return prompt
-def prompt_gen_purpose(work_product):
-    prompt = (
-        f"As an auditor specializing in ISO 26262 and ASPICE compliance, "
-        f"provide a clear and concise explanation of the purpose of the work product '{work_product}' "
-        f"in the context of these standards, focusing on its role in ensuring compliance and quality."
-    )
+
     return prompt
 
-def prompt_gen_content(work_product, standards):
+
+def prompt_gen_purpose(work_product: str) -> str:
+    """
+    Generates a prompt for explaining the purpose of a work product.
+
+    Args:
+        work_product (str): The target work product.
+
+    Returns:
+        str: A formatted prompt string.
+    """
+
+    # Introduction
+    prompt = (
+        f"You are tasked with explaining the purpose of the work product '**{work_product}**' "
+        f"within the context of ISO 26262 and ASPICE.\n\n"
+    )
+
+    # Task Instructions
+    prompt += (
+        "**Task Instructions:**\n"
+        f"1. Provide a clear explanation of the purpose of '**{work_product}**' in both ISO 26262 "
+        "and ASPICE standards.\n"
+        "2. Focus on its role in ensuring compliance, functional safety, and quality.\n"
+        "3. For ISO 26262:\n"
+        "   - Highlight the work product's importance in achieving functional safety objectives.\n"
+        "   - Describe its relevance to processes or guidelines outlined in ISO 26262.\n"
+        "4. For ASPICE:\n"
+        "   - Explain how the work product supports process improvement and quality assurance.\n"
+        "   - Relate it to ASPICE's engineering or management processes.\n\n"
+    )
+
+    # Output Format
+    prompt += (
+        "**Output Format:**\n"
+        "Use the `PurposeModel` function tool to define and process the result:\n"
+        "- The tool should include:\n"
+        "  - `purpose_iso`: A clear and concise description of the work product's purpose "
+        "according to ISO 26262.\n"
+        "  - `purpose_aspice`: A clear and concise description of the work product's purpose "
+        "according to ASPICE.\n"
+        "- Use structured, professional language suitable for technical reports or documentation.\n"
+        "- Ensure the explanations are specific, relevant, and concise.\n\n"
+    )
+
+    return prompt
+
+
+def prompt_gen_uses(work_product: str, standards: pd.DataFrame) -> str:
+    """
+    Generates a prompt for explaining the use cases of a work product based on given ISO 26262 
+    and ASPICE standards.
+
+    Args:
+        work_product (str): The target work product.
+        standards (pd.DataFrame): A DataFrame containing ISO 26262 and ASPICE requirements.
+
+    Returns:
+        str: A formatted prompt string.
+    """
+
     standards_str = standards.to_string(index=False)
+
     prompt = (
-        f"Based on the following ISO 26262 and ASPICE requirements:\n\n{standards_str}\n\n"
-        f"Explain what necessary content the '{work_product}' should include to comply with these standards. "
-        f"Be concise and focus on the key requirements.\n"
-        f"**Note:** Remove all references to external IDs or clauses from the definitions. Only mentions of ISO or ASPICE as frameworks are permitted.\n\n"
+        f"You are tasked with explaining the use cases of the work product '**{work_product}**' "
+        f"within the context of ISO 26262 and ASPICE standards.\n\n"
     )
+
+    prompt += (
+        "**Task Instructions:**\n"
+        "1. Review the provided ISO 26262 and ASPICE requirements.\n"
+        f"2. Explain the primary use cases of the work product '**{work_product}**'.\n"
+        "3. Describe how the work product supports documentation and compliance efforts.\n"
+        "4. Focus on key points that demonstrate the work product's role in achieving compliance "
+        "with ISO 26262 and ASPICE.\n"
+        "5. Avoid referencing external IDs or specific clauses; only general mentions of ISO or "
+        "ASPICE frameworks are permitted.\n\n"
+    )
+
+    prompt += (
+        "**Output Format:**\n"
+        f"- Provide a clear and concise explanation of the use cases for '**{work_product}**'.\n"
+        "- Highlight its significance in ensuring compliance and facilitating documentation.\n"
+        "- Use structured, professional language suitable for technical reports or "
+        "documentation.\n\n"
+    )
+
+    prompt += (
+        "The following ISO 26262 and ASPICE requirements are provided for context:"
+        f"\n\n{standards_str}\n\n"
+    )
+
     return prompt
 
-def prompt_gen_input(work_product, standards):
+
+
+def prompt_gen_input(work_product: str, standards: pd.DataFrame) -> str:
+    """
+    Generates a prompt for identifying the necessary inputs for a work product based 
+    on ISO 26262 and ASPICE standards.
+
+    Args:
+        work_product (str): The target work product.
+        standards (pd.DataFrame): A DataFrame containing ISO 26262 and ASPICE requirements.
+
+    Returns:
+        str: A formatted prompt string.
+    """
+
     standards_str = standards.to_string(index=False)
+
     prompt = (
-        f"Based on the following ISO 26262 and ASPICE requirements:\n\n{standards_str}\n\n"
-        f"Focus on the key requirements that guarantee compliance of the '{work_product}' with these standards. "
-        f"Explain the necessary inputs that the '{work_product}' should have. "
-        f"Be concise and specific.\n"
-        f"**Note:** Remove all references to external IDs or clauses from the definitions. Only mentions of ISO or ASPICE as frameworks are permitted.\n\n"
+        f"You are tasked with identifying the necessary inputs for the work product "
+        f"'**{work_product}**' "
+        f"to ensure compliance with ISO 26262 and ASPICE standards.\n\n"
     )
+
+    prompt += (
+        "**Task Instructions:**\n"
+        "1. Review the provided ISO 26262 and ASPICE requirements.\n"
+        "2. Focus on the key requirements that guarantee compliance of the work product "
+        f"'**{work_product}**'.\n"
+        "3. Explain the necessary inputs the work product should have to achieve compliance.\n"
+        "4. Be concise and specific, focusing only on relevant inputs.\n"
+        "5. Avoid referencing external IDs or specific clauses; only general mentions of ISO or "
+        "ASPICE frameworks are permitted.\n\n"
+    )
+
+    prompt += (
+        "**Output Format:**\n"
+        "- Provide a clear and concise explanation of the necessary inputs for "
+        f"'**{work_product}**'.\n"
+        "- Highlight how these inputs contribute to compliance with ISO 26262 and ASPICE "
+        "standards.\n"
+        "- Use structured, professional language suitable for technical documentation.\n\n"
+    )
+
+    prompt += (
+        "The following ISO 26262 and ASPICE requirements are provided for context:"
+        f"\n\n{standards_str}\n\n"
+    )
+
     return prompt
 
-def prompt_gen_uses(work_product, standards):
+
+def prompt_gen_content(work_product: str, standards: pd.DataFrame) -> str:
+    """
+    Generates a prompt for explaining the content requirements for a work product.
+
+    Args:
+        work_product (str): The target work product.
+        standards (pd.DataFrame): A DataFrame containing ISO 26262 and ASPICE requirements.
+
+    Returns:
+        str: A formatted prompt string.
+    """
+
+    # Convert standards DataFrame to a formatted string
     standards_str = standards.to_string(index=False)
+
+    # Construct the prompt
     prompt = (
-        f"Based on the following ISO 26262 and ASPICE requirements:\n\n{standards_str}\n\n"
-        f"Explain the use cases for the '{work_product}' and how this work product aids in documentation. "
-        f"Focus on key points and be concise."
-        f"**Note:** Remove all references to external IDs or clauses from the definitions. Only mentions of ISO or ASPICE as frameworks are permitted.\n\n"
+        f"You are provided with the following ISO 26262 and ASPICE requirements:\n\n"
+        f"{standards_str}\n\n"
+        "**Task Instructions:**\n"
+        f"1. Explain the required content for the work product '**{work_product}**' to ensure "
+        "compliance with ISO 26262 and ASPICE standards.\n"
+        "2. Highlight specific elements, sections, or artifacts that must be included in the "
+        "work product.\n"
+        "3. Focus on the content necessary to meet compliance and quality expectations.\n"
+        "4. Avoid referencing external IDs or clauses; only general mentions of ISO or ASPICE "
+        "frameworks are permitted.\n\n"
     )
+
+    # Output Format
+    prompt += (
+        "**Output Format:**\n"
+        f"- Provide a detailed explanation of the required content for '**{work_product}**'.\n"
+        "- Focus on relevance to ISO 26262 and ASPICE compliance requirements.\n"
+        "- Use structured, professional language suitable for documentation purposes.\n\n"
+    )
+
     return prompt
 
-def prompt_context(context, work_product):
+
+def prompt_context(context: WorkProductContextModel, work_product) -> list[dict]:
+    """
+    Generates a list of messages that describe various aspects of a work product in the context 
+    of ISO 26262 and Automotive SPICE.
+    Args:
+        context (WorkProductContextModel): The context model containing descriptions, concepts, 
+        and terminology related to the work product.
+        work_product (str): The name of the work product.
+    Returns:
+        list: A list of dictionaries, each representing a message with a role and content, 
+        detailing the purpose, content, input, uses, terminology, disambiguation entries, and 
+        abbreviations related to the work product.
+    """
+
     messages = []
     message_purpose = {
         "role": "user",
         "content": (
-            f"**Purpose in ISO 26262:**\n"
-            f"The purpose of this work product in the context of ISO 26262 is as follows:\n{context.description.purpose.purpose_iso}\n"
-            f"**Purpose in Automotive SPICE:**\n"
-            f"The purpose of this work product in the context of Automotive SPICE is as follows:\n{context.description.purpose.purpose_aspice}\n"
+            "**Purpose in ISO 26262:**\n"
+            "The purpose of this work product in the context of ISO 26262 is as follows:\n"
+            f"{context.description.purpose.purpose_iso}\n"
+            "**Purpose in Automotive SPICE:**\n"
+            "The purpose of this work product in the context of Automotive SPICE is as follows:"
+            f"\n{context.description.purpose.purpose_aspice}\n"
         )
     }
     messages.append(message_purpose)
@@ -150,8 +423,9 @@ def prompt_context(context, work_product):
     message_content = {
         "role": "user",
         "content": (
-            f"**Content:**\n"
-            f"This section outlines the necessary content for the work product:\n{context.description.content}\n"
+            "**Content:**\n"
+            "This section outlines the necessary content for the work product:\n"
+            f"{context.description.content}\n"
         )
     }
     messages.append(message_content)
@@ -159,8 +433,9 @@ def prompt_context(context, work_product):
     message_input = {
         "role": "user",
         "content": (
-            f"**Input:**\n"
-            f"This section describes the required inputs for the work product:\n{context.description.input}\n"
+            "**Input:**\n"
+            "This section describes the required inputs for the work product:\n"
+            f"{context.description.input}\n"
         )
     }
     messages.append(message_input)
@@ -168,8 +443,9 @@ def prompt_context(context, work_product):
     message_uses = {
         "role": "user",
         "content": (
-            f"**Uses:**\n"
-            f"This section explains the uses and applications of the work product:\n{context.description.uses}\n"
+            "**Uses:**\n"
+            "This section explains the uses and applications of the work product:\n"
+            f"{context.description.uses}\n"
         )
     }
     messages.append(message_uses)
@@ -177,8 +453,13 @@ def prompt_context(context, work_product):
     # Consolidate Terminology Terms
     terminology_terms = context.concepts.terminology_iso.terms
     if terminology_terms:
-        terminology_content = f"In the context of the work product '{work_product}', the following glossary terms are defined:\n"
-        terminology_content += "\n".join([f"- '{term.term}': {term.definition}" for term in terminology_terms])
+        terminology_content = (
+            f"In the context of the work product '{work_product}', the following glossary terms "
+            "are defined:\n"
+        )
+        terminology_content += "\n".join(
+            [f"- '{term.term}': {term.definition}" for term in terminology_terms]
+        )
         messages.append({
             "role": "user",
             "content": terminology_content
@@ -188,10 +469,14 @@ def prompt_context(context, work_product):
     disambiguation_entries = context.concepts.disambiguation.entries
     if disambiguation_entries:
         disambiguation_content = (
-            f"In the work product '{work_product}', the following disambiguation concepts are defined:\n"
-            f"Use these concepts to understand how a single idea can be referred to by different names in ISO 26262 and ASPICE. "
-            f"This section also provides examples of their usage, helping to clarify their application.\n"
-            f"The concept names serve to unify the different terminologies, ensuring consistency for the tasks in this work product.\n")
+            f"In the work product '{work_product}', the following disambiguation concepts are "
+            "defined:\n"
+            "Use these concepts to understand how a single idea can be referred to by different "
+            "names in ISO 26262 and ASPICE. "
+            "This section also provides examples of their usage, helping to clarify their "
+            "application.\n"
+            "The concept names serve to unify the different terminologies, ensuring consistency "
+            "for the tasks in this work product.\n")
 
         for entry in disambiguation_entries:
             disambiguation_content += (
@@ -212,12 +497,18 @@ def prompt_context(context, work_product):
     # Consolidate Abbreviations
     abbreviations = context.concepts.abbreviations.abbreviations
     if abbreviations:
-        abbreviations_content = f"In the work product '{work_product}', the following abbreviations are defined:\n"
-        abbreviations_content += "\n".join([f"- '{abbreviation.abbreviation}': {abbreviation.definition}" for abbreviation in abbreviations])
+        abbreviations_content = (
+            f"In the work product '{work_product}', the following abbreviations are defined:\n"
+        )
+        abbreviations_content += "\n".join(
+            [
+            f"- '{abbreviation.abbreviation}': {abbreviation.definition}"
+            for abbreviation in abbreviations
+            ]
+        )
         messages.append({
             "role": "user",
             "content": abbreviations_content
         })
 
     return messages
-

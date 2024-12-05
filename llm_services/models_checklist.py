@@ -1,8 +1,10 @@
 """
 This module contains data validation classes used for structured outcomes generation with the LLM
 for the final step of generating the checklists. 
-These classes facilitate the creation and organization of checklist items, ensuring consistency and
-structured data for downstream processing.
+
+Classes:
+- ChecklistItem
+- ChecklistModel
 """
 
 from pydantic import BaseModel, Field

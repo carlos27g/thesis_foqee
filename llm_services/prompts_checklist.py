@@ -42,7 +42,7 @@ def prompt_generate_checklist(work_product, content) -> str:
         f"- The checklist should be clear, concise, and organized by related topics.\n"
         f"- Provide enough information for the end user to understand what needs to be done to "
         f"comply with the standards without needing to read the frameworks themselves.\n\n"
-        f"**Task:**\n"
+        "**Task Instructions:**\n"
         f"1. **Thoroughly analyze the provided content of requirements** related to compliance.\n"
         f"2. **Identify and group related requirements together** based on common themes or "
         f"topics.\n"

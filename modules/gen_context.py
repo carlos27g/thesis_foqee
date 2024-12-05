@@ -41,24 +41,16 @@ def gen_context(df_standards) -> dict:
     df_standards_filtered = df_standards[['Work Product', 'ID', 'Description']]
     context = {}
 
-    # Load existing context if available
-    if os.getenv('NEW_CONTEXT') == 'false':
-        print(colored("Loading existing contexts...", "green"))
-        for work_product in work_products:
-            context_model = load_models(f"{work_product} context", WorkProductContextModel)
-            if not context_model:
-                print(colored("No context found for work product:", "red"), work_product)
-                raise Exception(f"No context found for work product: {work_product}")
-            context[work_product] = context_model
-        return context
-
     # Create new context for the work products
     print(colored("Creating new contexts...", "green"))
     disambiguation_path = os.path.join(os.getcwd(), "datasets", "Disambiguation.xlsx")
     # datasets for contextualisation
-    disambiguation_df_iso = pd.read_excel(disambiguation_path, sheet_name='Terminology in ISO 26262')
-    disambiguation_df_disambiguation = pd.read_excel(disambiguation_path, sheet_name='Disambiguation')
-    disambiguation_df_abbreviations = pd.read_excel(disambiguation_path, sheet_name='Abbreviations')
+    disambiguation_df_iso = pd.read_excel(disambiguation_path,
+                                          sheet_name='Terminology in ISO 26262')
+    disambiguation_df_disambiguation = pd.read_excel(disambiguation_path,
+                                                     sheet_name='Disambiguation')
+    disambiguation_df_abbreviations = pd.read_excel(disambiguation_path,
+                                                    sheet_name='Abbreviations')
 
     # datasets for contextualisation converted to a list of dictionaries
     terminology_iso_list = create_dict_iso_terminology(disambiguation_df_iso)
@@ -69,7 +61,17 @@ def gen_context(df_standards) -> dict:
         print(colored(f"Processing work product: {work_product}", "green"))
         df_standards_filtered = df_standards[df_standards['Work Product'] == work_product]
         print(f"Number of standards available: {len(df_standards_filtered)}")
-        concepts = filter_concepts(work_product, terminology_iso_list, concepts_list, abbreviations_list)
+
+        if os.getenv('NEW_CONTEXT') == 'false':
+            context_model = load_models(f"{work_product} context", WorkProductContextModel)
+            if context_model:
+                print(colored(f"Context for work product {work_product} already exists.", "green"))
+                context[work_product] = context_model
+                continue
+            print(colored(f"Context for work product {work_product} does not exist.", "red"))
+
+        concepts = filter_concepts(work_product, terminology_iso_list, concepts_list,
+                                   abbreviations_list)
         description = gen_description(work_product, df_standards_filtered)
         context_model = WorkProductContextModel(
             description=description,
@@ -129,6 +131,78 @@ def gen_description(work_product, standards) -> dict:
     return description_model
 
 
+def process_terminology(work_product, terminology_iso):
+    """
+    Processes a list of ISO terminology terms in batches, consolidating them into a single TermListModel.
+    Args:
+        work_product (str): The work product to be used in the prompt.
+        terminology_iso (list): A list of ISO terminology terms.
+    Returns:
+        TermListModel: A consolidated model containing all processed terms.
+    """
+    consolidated_terminology_model = TermListModel(terms=[])
+    for i in range(0, len(terminology_iso), 5):
+        batch = terminology_iso[i:i + 5]
+        prompt = prompt_terminology_iso_extraction(work_product, batch)
+        message = {"role": "user", "content": prompt}
+        response = send_prompt([message], TermListModel)
+        if response:
+            terminology_model = TermListModel.model_validate(response)
+            if terminology_model:
+                consolidated_terminology_model.terms.extend(terminology_model.terms) # pylint: disable=no-member
+    consolidated_terminology_model = TermListModel.model_validate(consolidated_terminology_model)
+    return consolidated_terminology_model
+
+def process_disambiguation(work_product, disambiguation):
+    """
+    Processes disambiguation entries in batches and consolidates the results.
+    Args:
+        work_product: The work product to be used in the disambiguation prompt.
+        disambiguation: A list of disambiguation entries to be processed.
+    Returns:
+        A consolidated DisambiguationModel containing all processed entries.
+    """
+
+    consolidated_disambiguation_model = DisambiguationModel(entries=[])
+    for i in range(0, len(disambiguation), 5):
+        batch = disambiguation[i:i + 5]
+        prompt = prompt_disambiguation_extraction(work_product, batch)
+        message = {"role": "user", "content": prompt}
+        response = send_prompt([message], DisambiguationModel)
+        if response:
+            disambiguation_model = DisambiguationModel.model_validate(response)
+            if disambiguation_model:
+                consolidated_disambiguation_model.entries.extend(disambiguation_model.entries) # pylint: disable=no-member
+    consolidated_disambiguation_model = DisambiguationModel.model_validate(
+        consolidated_disambiguation_model)
+    return consolidated_disambiguation_model
+
+def process_abbreviations(work_product, abbreviations):
+    """
+    Process a list of abbreviations by sending them in batches for extraction 
+    and consolidating the results into a single model.
+    Args:
+        work_product (str): The work product to be used in the prompt.
+        abbreviations (list): A list of abbreviations to be processed.
+    Returns:
+        AbbreviationListModel: A model containing the consolidated list of abbreviations.
+    """
+
+    consolidated_abbreviation_model = AbbreviationListModel(abbreviations=[])
+    for i in range(0, len(abbreviations), 10):
+        batch = abbreviations[i:i + 10]
+        prompt = prompt_abbreviations_extraction(work_product, batch)
+        message = {"role": "user", "content": prompt}
+        response = send_prompt([message], AbbreviationListModel)
+        if response:
+            abbreviations_model = AbbreviationListModel.model_validate(response)
+            if abbreviations_model:
+                consolidated_abbreviation_model.abbreviations.extend( # pylint: disable=no-member
+                    abbreviations_model.abbreviations) 
+    consolidated_abbreviation_model = AbbreviationListModel.model_validate(
+        consolidated_abbreviation_model)
+    return consolidated_abbreviation_model
+
 def filter_concepts(work_product, terminology_iso, disambiguation, abbreviations) -> dict:
     """
     Filters the concepts relevant to a given work product.
@@ -146,50 +220,14 @@ def filter_concepts(work_product, terminology_iso, disambiguation, abbreviations
     """
     print("Filtering Concepts...")
 
-    terminology_model = None
-    disambiguation_model = None
-    abbreviations_model = None
-
-    consolidated_abbreviation_model = AbbreviationListModel(abbreviations=[])
-    consolidated_terminology_model = TermListModel(terms=[])
-    consolidated_disambiguation_model = DisambiguationModel(entries=[])
-
-    for i in range(0, len(terminology_iso), 5):
-        batch = terminology_iso[i:min(i + 5, len(terminology_iso))]
-        prompt_terminology = prompt_terminology_iso_extraction(work_product, batch)
-        message_terminology = {"role": "user", "content": prompt_terminology}
-        response_terminology = send_prompt([message_terminology], TermListModel)
-        if response_terminology:
-            terminology_model = TermListModel.model_validate(response_terminology)
-            if terminology_model:
-                consolidated_terminology_model.terms.extend(terminology_model.terms) # pylint: disable=no-member
+    consolidated_terminology_model = process_terminology(work_product, terminology_iso)
     print("- Terminology done.")
 
-    for i in range(0, len(disambiguation), 5):
-        batch = disambiguation[i:min(i + 5, len(disambiguation))]
-        prompt_disambiguation = prompt_disambiguation_extraction(work_product, batch)
-        message_disambiguation = {"role": "user", "content": prompt_disambiguation}
-        response_disambiguation = send_prompt([message_disambiguation], DisambiguationModel)
-        if response_disambiguation:
-            disambiguation_model = DisambiguationModel.model_validate(response_disambiguation)
-            if disambiguation_model:
-                consolidated_disambiguation_model.entries.extend(disambiguation_model.entries) # pylint: disable=no-member
+    consolidated_disambiguation_model = process_disambiguation(work_product, disambiguation)
     print("- Disambiguation done.")
 
-    for i in range(0, len(abbreviations), 10):
-        batch = abbreviations[i:min(i + 10, len(abbreviations))]
-        prompt_abbreviations = prompt_abbreviations_extraction(work_product, batch)
-        message_abbreviations = {"role": "user", "content": prompt_abbreviations}
-        response_abbreviations = send_prompt([message_abbreviations], AbbreviationListModel)
-        if response_abbreviations:
-            abbreviations_model = AbbreviationListModel.model_validate(response_abbreviations)
-            if abbreviations_model:
-                consolidated_abbreviation_model.abbreviations.extend(abbreviations_model.abbreviations) # pylint: disable=no-member
+    consolidated_abbreviation_model = process_abbreviations(work_product, abbreviations)
     print("- Abbreviations done.")
-    
-    consolidated_disambiguation_model = DisambiguationModel.model_validate(consolidated_disambiguation_model)
-    consolidated_terminology_model = TermListModel.model_validate(consolidated_terminology_model)
-    consolidated_abbreviation_model = AbbreviationListModel.model_validate(consolidated_abbreviation_model)
 
     concepts_model = ConceptsModel(
         terminology_iso=consolidated_terminology_model,
@@ -198,4 +236,3 @@ def filter_concepts(work_product, terminology_iso, disambiguation, abbreviations
     )
     concepts_model = ConceptsModel.model_validate(concepts_model)
     return concepts_model
-

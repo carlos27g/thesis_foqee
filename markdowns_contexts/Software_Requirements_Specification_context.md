@@ -1,117 +1,142 @@
 # Work Product Description
 ## Purpose
 ### Purpose in ISO26262
-The Software Requirements Specification (SRS) in ISO 26262 serves to ensure that all safety requirements are clearly defined, traceable, and testable. It is a critical document that outlines the software safety requirements derived from the system and hardware requirements, ensuring that the software design and implementation can achieve the necessary safety goals. The SRS helps in identifying potential hazards and mitigating risks through detailed requirements, thus playing a vital role in the safety lifecycle of automotive software development.
+The Software Requirements Specification (SRS) in ISO 26262 serves as a critical document that defines the software safety requirements necessary to achieve the overall functional safety objectives of the system. It ensures that all safety-related aspects are considered and addressed in the software design and implementation phases. The SRS is integral to the safety lifecycle, providing traceability from the safety goals and technical safety requirements to the software level. It supports compliance with ISO 26262 by ensuring that the software development process systematically addresses potential hazards and mitigates risks to an acceptable level.
 ### Purpose in Automotive SPICE
-In ASPICE, the Software Requirements Specification (SRS) is essential for defining the functional and non-functional requirements of the software product. It ensures that all stakeholder needs are captured and translated into detailed software requirements, which are then used to guide the design, implementation, and testing phases. The SRS is crucial for achieving traceability, consistency, and completeness in the software development process, thereby supporting quality assurance and process improvement in line with ASPICE standards.
+In ASPICE, the Software Requirements Specification (SRS) is essential for supporting process improvement and quality assurance within the software development lifecycle. It provides a detailed description of the software requirements, ensuring that they are complete, consistent, and verifiable. The SRS is closely linked to ASPICE's engineering processes, particularly in the areas of requirements elicitation, analysis, and management. It facilitates effective communication among stakeholders and serves as a foundation for subsequent design, implementation, and testing activities, thereby enhancing the overall quality and reliability of the software product.
 ## Content
-To comply with ISO 26262 and ASPICE standards, the 'Software Requirements Specification' should include the following key content:
+**Software Requirements Specification: Compliance with ISO 26262 and ASPICE**
 
-1. **Functional and Non-Functional Requirements**: Clearly identify and document both functional and non-functional requirements for the software, ensuring they are derived from system requirements and architecture. These requirements should be verifiable, unambiguous, and free from design and implementation constraints.
+The Software Requirements Specification (SRS) is a critical work product in the development of automotive systems, ensuring that both functional and non-functional requirements are clearly defined and aligned with safety and quality standards. To achieve compliance with ISO 26262 and ASPICE, the SRS must encompass the following elements:
 
-2. **Software Safety Requirements**: Derive software safety requirements considering safety-related functionalities and properties that could lead to the violation of technical safety requirements. These should include functions for safe execution, fault detection, and maintaining safe states.
+### 1. **Identification and Documentation of Requirements**
+- **Functional and Non-Functional Requirements**: The SRS should comprehensively document both functional and non-functional requirements derived from system requirements and architecture. This includes detailing the software's intended behavior and performance characteristics.
+- **Characteristics of Requirements**: Requirements must be verifiable, unambiguous, comprehensible, free from design and implementation constraints, and non-contradictory. These characteristics ensure clarity and facilitate effective communication among stakeholders.
 
-3. **Specification and Management**: Ensure the specification and management of safety requirements consider system and hardware configurations, hardware-software interfaces, timing constraints, external interfaces, and operating modes.
+### 2. **Software Safety Requirements**
+- **Derivation from Safety Goals**: The SRS must include software safety requirements derived from technical safety requirements. These should address safety-related functionalities and properties that, if unmet, could compromise safety.
+- **Consideration of Safety Analyses**: Safety-oriented analyses should be used to identify additional safety requirements and provide evidence of their fulfillment.
 
-4. **ASIL Considerations**: If ASIL decomposition is applied, ensure compliance with relevant ISO guidelines. Safety requirements should inherit the ASIL from the safety requirements they are derived from unless decomposition is applied.
+### 3. **Structuring and Prioritization**
+- **Organizational Structure**: Requirements should be structured hierarchically and organized according to a logical grouping scheme, such as by functionality or product variants. This aids in managing complexity and ensuring completeness.
+- **Prioritization**: Requirements should be prioritized based on project or stakeholder needs, which can guide release planning and resource allocation.
 
-5. **Characteristics of Safety Requirements**: Safety requirements should be unambiguous, comprehensible, atomic, internally consistent, feasible, verifiable, necessary, implementation-free, complete, and conforming to applicable standards.
+### 4. **Specification and Management of Safety Requirements**
+- **Attributes of Safety Requirements**: Each safety requirement must have a unique identification, status, and assigned ASIL (Automotive Safety Integrity Level). This ensures traceability and clarity throughout the safety lifecycle.
+- **Characteristics of Safety Requirements**: Safety requirements should be unambiguous, comprehensible, atomic, consistent, feasible, verifiable, necessary, implementation-free, complete, and conforming to relevant standards.
 
-6. **Attributes of Safety Requirements**: Each safety requirement should have a unique identification, a status, and an ASIL level.
+### 5. **Interface and Configuration Considerations**
+- **Hardware-Software Interface (HSI)**: The SRS should detail the HSI, ensuring that software requirements align with hardware specifications and configurations.
+- **External Interfaces and Operating Modes**: Requirements must account for external interfaces and various operating modes, including transitions between modes, to ensure robust system behavior.
 
-7. **Hierarchical and Organizational Structure**: Safety requirements should be organized hierarchically and grouped appropriately, ensuring completeness, external consistency, no duplication, and maintainability.
+### 6. **Maintainability and Consistency**
+- **Maintainability**: The SRS should be structured to allow for easy modification and extension, supporting the introduction of new requirements or versions.
+- **Consistency**: Both internal and external consistency must be maintained, ensuring that requirements do not contradict themselves or each other.
 
-8. **Documentation and Identification**: Safety requirements should be clearly identifiable, possibly listed in a separate document or marked with a special attribute if included with other requirements.
+### 7. **Verification and Validation**
+- **Verifiability**: The SRS must include criteria for verifying each requirement, ensuring that they can be tested and validated effectively.
+- **Compliance with Standards**: The SRS should conform to applicable automotive industry standards, ensuring that all requirements meet regulatory and safety expectations.
 
-By incorporating these elements, the 'Software Requirements Specification' will align with the necessary standards for safety and quality in automotive software development.
+By incorporating these elements, the Software Requirements Specification will meet the compliance and quality expectations set forth by ISO 26262 and ASPICE, ensuring a robust foundation for the development of safe and reliable automotive systems.
 ## Input
-To ensure compliance of the 'Software Requirements Specification' with ISO 26262 and ASPICE standards, the following key requirements and inputs should be considered:
+To ensure compliance with ISO 26262 and ASPICE standards for the work product '**Software Requirements Specification**', the following necessary inputs should be considered:
+
+1. **System Requirements and System Architecture**: These serve as the foundational inputs for identifying and documenting both functional and non-functional software requirements. They ensure that the software requirements align with the overall system objectives and architecture, providing a clear context for software development.
+
+2. **Technical Safety Requirements**: Derived from the system's safety goals, these requirements are crucial for identifying software safety requirements. They ensure that the software can handle safety-related functionalities and properties, preventing violations of technical safety requirements.
+
+3. **Hardware-Software Interface (HSI) Specification**: This input is essential for understanding the interaction between hardware and software components. It provides necessary details for defining software requirements that are dependent on hardware interfaces.
+
+4. **Stakeholder Requirements**: These inputs are vital for capturing the needs and expectations of stakeholders, which can influence the prioritization and structuring of software requirements. They ensure that the software meets user and business needs.
+
+5. **Safety-Oriented Analyses**: These analyses help identify additional software safety requirements and provide evidence for their achievement. They ensure that the software requirements address potential safety risks and are robust against failures.
+
+6. **Configuration Parameters and Timing Constraints**: Inputs such as system and hardware configurations, and timing constraints (e.g., execution or reaction times), are necessary for specifying precise software requirements. They ensure that the software operates correctly within defined parameters and timeframes.
+
+7. **External Interfaces and Operating Modes**: Understanding external interfaces (e.g., communication and user interfaces) and operating modes (e.g., normal, degraded, testing) is crucial for defining comprehensive software requirements. These inputs ensure that the software can interact effectively with external systems and adapt to different operational states.
+
+8. **ASIL Decomposition**: If applicable, this input is necessary for managing the allocation of safety integrity levels across software components. It ensures that the software requirements maintain the appropriate safety levels as derived from higher-level safety goals.
+
+9. **Quality Management System Specifications**: For functions beyond those with specified safety requirements, inputs from the quality management system ensure that all software functions are documented and meet quality standards.
+
+These inputs collectively contribute to the compliance of the Software Requirements Specification with ISO 26262 and ASPICE standards by ensuring that the requirements are comprehensive, safety-oriented, and aligned with system-level objectives and constraints.
+## Uses
+**Use Cases of the Software Requirements Specification (SRS) in ISO 26262 and ASPICE Context**
+
+The Software Requirements Specification (SRS) is a critical work product in the development of automotive systems, serving as a foundational document that outlines the functional and non-functional requirements of the software. Its use cases within the context of ISO 26262 and ASPICE standards are pivotal for ensuring compliance and facilitating effective documentation.
 
 1. **Identification and Documentation of Requirements:**
-   - Use system requirements and architecture to identify and document both functional and non-functional software requirements.
-   - Ensure requirements are verifiable, unambiguous, and free from design constraints.
+   - The SRS is used to identify and document both functional and non-functional requirements derived from system requirements and architecture. This aligns with ASPICE's emphasis on using defined characteristics for requirements, such as verifiability, unambiguity, and freedom from design constraints. In ISO 26262, the SRS is crucial for deriving software safety requirements from technical safety requirements, ensuring that safety-related functionalities and properties are adequately captured.
 
-2. **Derivation of Software Safety Requirements:**
-   - Derive software safety requirements from technical safety requirements, considering safety-related functionalities and properties.
-   - Include functions that ensure safe execution, maintain safe states, and handle fault detection and mitigation.
+2. **Structuring and Prioritization:**
+   - The SRS provides a structured approach to organizing software requirements, which can be grouped by functionality or product variants. Prioritization is also addressed, allowing requirements to be aligned with project or stakeholder needs. This structured approach supports ASPICE's process of managing requirements effectively and ensures that critical safety requirements are prioritized in accordance with ISO 26262.
 
-3. **Specification and Management of Safety Requirements:**
-   - Specify safety requirements using a combination of natural language and structured methods.
-   - Ensure safety requirements are unambiguously identifiable, inheriting the appropriate ASIL (Automotive Safety Integrity Level).
+3. **Specification of Safety Requirements:**
+   - In ISO 26262, the SRS is instrumental in specifying software safety requirements, considering factors such as hardware-software interfaces, timing constraints, and operating modes. The document ensures that safety requirements are unambiguously identifiable, inherit the appropriate ASIL (Automotive Safety Integrity Level), and possess characteristics such as feasibility, verifiability, and completeness.
 
-4. **Characteristics of Safety Requirements:**
-   - Ensure safety requirements are unambiguous, comprehensible, atomic, consistent, feasible, verifiable, necessary, implementation-free, complete, and conforming to relevant standards.
+4. **Support for ASIL Decomposition:**
+   - The SRS supports the application of ASIL decomposition, as outlined in ISO 26262, by ensuring that safety requirements are appropriately decomposed and managed. This involves maintaining a hierarchical structure and ensuring external consistency and maintainability of the requirements.
 
-5. **Attributes of Safety Requirements:**
-   - Assign unique identification, status, and ASIL to each safety requirement, maintaining these attributes throughout the safety lifecycle.
+5. **Facilitation of Safety Analyses:**
+   - The SRS aids in conducting safety-oriented analyses, providing a basis for identifying additional software safety requirements and offering evidence for their achievement. This aligns with ISO 26262's focus on ensuring that software functions and properties do not lead to violations of technical safety requirements.
 
-6. **Structuring and Prioritization:**
-   - Structure software requirements by grouping and prioritizing them according to project or stakeholder needs.
+**Significance in Compliance and Documentation:**
 
-7. **Consideration of Interfaces and Configurations:**
-   - Account for hardware-software interfaces, system and hardware configurations, timing constraints, and external interfaces in the specification of software safety requirements.
+The SRS plays a vital role in achieving compliance with ISO 26262 and ASPICE by serving as a comprehensive documentation of software requirements. It ensures that all requirements are clearly communicated to stakeholders, facilitating their implementation and verification. The SRS also supports traceability, allowing for the tracking of requirements throughout the development lifecycle, which is essential for both standards.
 
-8. **Hierarchical and Organizational Structure:**
-   - Organize safety requirements hierarchically and ensure they are complete, externally consistent, and maintainable without duplication.
-
-9. **Maintainability and Completeness:**
-   - Ensure the set of requirements can be modified or extended, maintaining completeness and consistency across all levels.
-
-Inputs for the 'Software Requirements Specification' should include:
-- System requirements and architecture.
-- Technical safety requirements and safety goals.
-- Hardware-software interface specifications.
-- Timing constraints and external interface details.
-- Configuration parameters and operating modes.
-
-By adhering to these requirements and inputs, the 'Software Requirements Specification' will align with ISO 26262 and ASPICE standards, ensuring a robust and compliant development process.
-## Uses
-The 'Software Requirements Specification' (SRS) is a critical work product in both ISO 26262 and ASPICE frameworks, serving as a comprehensive document that outlines the functional and non-functional requirements for software development in automotive systems. Here are the key use cases and how it aids in documentation:
-
-1. **Requirement Identification and Documentation**: The SRS uses system requirements and architecture to identify and document software requirements. This includes both functional and non-functional aspects, ensuring that all necessary capabilities and constraints are captured.
-
-2. **Safety Requirements Derivation**: In ISO 26262, the SRS is essential for deriving software safety requirements. It considers safety-related functionalities and properties that, if failed, could violate technical safety requirements. This ensures that safety is integrated into the software from the outset.
-
-3. **Structuring and Prioritization**: The SRS helps in structuring and prioritizing requirements, which can be organized by functionality or project needs. This organization aids in managing complexity and aligning development efforts with stakeholder priorities.
-
-4. **Specification of Safety Requirements**: The SRS specifies safety requirements using a combination of natural language and formal methods. This ensures that safety requirements are clear, unambiguous, and verifiable, facilitating communication among stakeholders.
-
-5. **Attributes and Characteristics**: The SRS ensures that safety requirements have essential attributes such as unique identification, status, and ASIL (Automotive Safety Integrity Level). It also ensures that requirements are unambiguous, comprehensible, feasible, verifiable, and implementation-free.
-
-6. **Hierarchical and Organizational Structure**: The SRS organizes safety requirements hierarchically and by appropriate grouping schemes. This structure ensures completeness, consistency, and maintainability, making it easier to manage and update requirements over time.
-
-7. **Interface and Configuration Considerations**: The SRS takes into account hardware-software interfaces, system configurations, and external interfaces, ensuring that all interactions and dependencies are well-documented and understood.
-
-Overall, the SRS is a foundational document that supports the development of safe, reliable, and compliant automotive software by providing a clear, structured, and comprehensive set of requirements. It facilitates communication, ensures alignment with safety standards, and aids in the verification and validation processes.
+By adhering to the characteristics and attributes outlined in ISO 26262 and ASPICE, the SRS ensures that software requirements are complete, consistent, and aligned with safety goals. This not only aids in compliance but also enhances the quality and reliability of the automotive system being developed.
 
 # Concepts
 ## Terminology (ISO)
-- **baseline:** version of the approved set of one or more work products, items or elements that serves as a basis for change. A baseline is typically placed under configuration management and is used as a basis for further development through the change management process during the lifecycle.
-- **confirmation review:** confirmation that a work product provides sufficient and convincing evidence of their contribution to the achievement of functional safety considering the corresponding objectives and requirements of ISO 26262. The goal of confirmation reviews is to ensure compliance with the ISO 26262 series of standards.
-- **development interface agreement:** agreement between customer and supplier in which the responsibilities for activities to be performed, evidence to be reviewed, or work products to be exchanged by each party related to the development of items or elements are specified
-- **element:** system, components (hardware or software), hardware parts, or software units
-- **embedded software:** fully-integrated software to be executed on a processing element
-- **functional safety concept:** specification of the functional safety requirements, with associated information, their allocation to elements within the architecture, and their interaction necessary to achieve the safety goals
-- **functional safety requirement:** specification of implementation-independent safety behaviour or implementation-independent safety measure including its safety-related attributes
-- **inspection:** examination of work products, following a formal procedure, in order to detect safety anomalies. Inspection is a means of verification. Inspection differs from testing in that it does not normally involve the operation of the associated item or element. A formal procedure normally includes a previously defined procedure, checklist, moderator and review of the results.
-- **review:** examination of a work product, for achievement of its intended work product goal, according to the purpose of the review.
-- **safety anomaly:** conditions that deviate from expectations and that can lead to harm. Safety anomalies can be discovered, among other times, during the review, testing, analysis, compilation, or use of components or applicable documentation. EXAMPLE Deviation can be on requirements, specifications, design documents, user documents, standards, or on experience.
+- **architecture:** representation of the structure of the item (3.84) or element (3.41) that allows identification of building blocks, their boundaries and interfaces, and includes the allocation of requirements to these building blocks
+- **baseline:** version of the approved set of one or more work products (3.185), items (3.84) or elements (3.41) that serves as a basis for change Note 1 to entry: See ISO 26262-8:2018, Clause 8. Note 2 to entry: A baseline is typically placed under configuration management. Note 3 to entry: A baseline is used as a basis for further development through the change management process during the lifecycle (3.86).
+- **confirmation review:** confirmation that a work product provides sufficient and convincing evidence of their contribution to the achievement of functional safety considering the corresponding objectives and requirements of ISO 26262. Note 1 to entry: A complete list of confirmation reviews is given in ISO 26262-2. Note 2 to entry: The goal of confirmation reviews is to ensure compliance with the ISO 26262 series of standards.
+- **element:** system (3.163), components (3.21) (hardware or software), hardware parts (3.71), or software units (3.159)
+Note 1 to entry: When “software element” or “hardware element” is used, this phrase denotes an element of
+software only or an element of hardware only, respectively.
+Note 2 to entry: An element may also be a SEooC (3.138).
+- **embedded software:** fully-integrated software to be executed on a processing element (3.113)
+- **error:** discrepancy between a computed, observed or measured value or condition, and the true, specified or
+theoretically correct value or condition
+Note 1 to entry: An error can arise as a result of a fault (3.54) within the system (3.163) or component (3.21) being
+considered.
+- **functional safety concept:** specification of the functional safety requirements (3.69), with associated information, their allocation to elements (3.41) within the architecture (3.1), and their interaction necessary to achieve the safety goals (3.139)
+- **functional safety requirement:** specification of implementation-independent safety (3.132) behaviour or implementation-independent safety measure (3.141) including its safety-related attributes
+- **inspection:** examination of work products (3.185), following a formal procedure, in order to detect safety anomalies (3.134). Note 1 to entry: Inspection is a means of verification (3.180). Note 2 to entry: Inspection differs from testing (3.169) in that it does not normally involve the operation of the associated item (3.84) or element (3.41). Note 3 to entry: A formal procedure normally includes a previously defined procedure, checklist, moderator and review (3.127) of the results.
+- **review:** examination of a work product (3.185), for achievement of its intended work product (3.185) goal, according to the purpose of the review Note 1 to entry: From a development phase (3.110) perspective, verification review (3.181) and confirmation review (3.24).
+- **safety anomaly:** conditions that deviate from expectations and that can lead to harm (3.74) Note 1 to entry: Safety anomalies can be discovered, among other times, during the review (3.127), testing (3.169), analysis, compilation, or use of components (3.21) or applicable documentation. EXAMPLE Deviation can be on requirements, specifications, design documents, user documents, standards, or on experience.
+- **safety element out of context:** SEooC safety-related element (3.144) which is not developed in the context of a specific item (3.84) Note 1 to entry: A SEooC can be a system (3.163), a combination of systems (3.163), a software component (3.157), a software unit (3.159), a hardware component (3.21) or a hardware part (3.71). EXAMPLE A generic wiper system (3.163) with assumed safety requirements to be integrated in different OEM systems (3.163).
 - **software component:** one or more software units (3.159)
-- **software tool:** computer program used in the development of an item (3.84) or element (3.41)
-- **verification:** determination whether or not an examined object meets its specified requirements EXAMPLE The typical verification activities can be classified as follows: — verification review, walk-through, inspection; — verification testing; — simulation; — prototyping; and — analysis (safety analysis, control flow analysis, data flow analysis, etc.).
-- **verification review:** verification activity to ensure that the result of a development activity fulfils the project requirements, or technical requirements, or both. The goal of verification reviews is technical correctness and completeness of the item or element. EXAMPLE Verification review types can be technical review, walk-through or inspection.
-- **walk-through:** systematic examination of work products in order to detect safety anomalies. Walk-through is a means of verification. Any anomalies that are detected are usually addressed by rework, followed by a walk-through of the reworked work products. EXAMPLE During a walk-through, the developer explains the work product step-by-step to one or more reviewers. The objective is to create a common understanding of the work product and to identify any safety anomalies within the work product.
-- **work product:** documentation resulting from one or more associated requirements of ISO 26262. The documentation can be in the form of a single document containing the complete information for the work product or a set of documents that together contain the complete information for the work product.
+- **software unit:** atomic level software component (3.157) of the software architecture (3.1) that can be subjected to stand-alone testing (3.169)
+- **statement coverage:** percentage of statements within the software that have been executed
+- **technical safety concept:** specification of the technical safety requirements (3.168) and their allocation to system (3.163) elements (3.41) with associated information providing a rationale for functional safety (3.67) at the system (3.163) level
+- **technical safety requirement:** requirement derived for implementation of associated functional safety requirements (3.69) Note 1 to entry: The derived requirement includes requirements for mitigation.
+- **verification:** determination whether or not an examined object meets its specified requirements EXAMPLE The typical verification activities can be classified as follows: — verification review (3.181), walk-through (3.182), inspection (3.82); — verification testing (3.169); — simulation; — prototyping; and — analysis (safety (3.132) analysis, control flow analysis, data flow analysis, etc.).
+- **verification review:** verification (3.180) activity to ensure that the result of a development activity fulfils the project requirements, or technical requirements, or both Note 1 to entry: Individual requirements on verification reviews are given in specific clauses of individual parts of the ISO 26262 series of standards. Note 2 to entry: The goal of verification reviews is technical correctness and completeness of the item (3.84) or element (3.41). EXAMPLE Verification review types can be technical review (3.127), walk-through (3.182) or inspection (3.82).
+- **walk-through:** systematic examination of work products (3.185) in order to detect safety anomalies (3.134) Note 1 to entry: Walk-through is a means of verification (3.180). Note 2 to entry: Walk-through differs from testing (3.169) in that it does not normally involve the operation of the associated item (3.84) or element (3.41). Note 3 to entry: Any anomalies that are detected are usually addressed by rework, followed by a walk-through of the reworked work products (3.185). EXAMPLE During a walk-through, the developer explains the work product (3.185) step-by-step to one or more reviewers. The objective is to create a common understanding of the work product (3.185) and to identify any safety anomalies (3.134) within the work product (3.185). Both inspections (3.82) and walk-throughs are types of peer review (3.127), where a walk-through is a less stringent form of peer review (3.127) than an inspection (3.82).
+- **work product:** documentation resulting from one or more associated requirements of ISO 26262 Note 1 to entry: The documentation can be in the form of a single document containing the complete information for the work product or a set of documents that together contain the complete information for the work product.
 
 ## Abbreviations
-- **ASIL:** Automotive Safety Integrity Level
+- **ASIL:** Automotive Safety Integrity Level (see definition 3.6)
 - **COTS:** Commercial Off The Shelf
 - **CRC:** Cyclic Redundancy Check
-- **DIA:** Development Interface Agreement
+- **DFA:** Dependent Failure Analysis
+- **DIA:** Development Interface Agreement (see definition 3.32)
 - **DMA:** Direct Memory Access
 - **ECC:** Error Correction Code
+- **ECU:** Electronic Control Unit
 - **EDC:** Error Detection Code
+- **E/E:** system Electrical and/or Electronic system (see definition 3.40)
+- **EMC:** ElectroMagnetic Compatibility
+- **EMI:** ElectroMagnetic Interference
+- **EOTI:** Emergency Operation Time Interval (see definition 3.44)
+- **EOTTI:** Emergency Operation Tolerance Time Interval (see definition 3.45)
+- **ESD:** ElectroStatic Discharge
+- **ESC:** Electronic Stability Control
 - **ETA:** Event Tree Analysis
+- **EVR:** Embedded Voltage Regulator
+- **FDTI:** Fault Detection Time Interval (see definition 3.55)
+- **FET:** Field Effect Transistor
 - **FMEA:** Failure Mode and Effects Analysis
 - **FTA:** Fault Tree Analysis
 - **HARA:** Hazard Analysis and Risk Assessment
@@ -120,12 +145,12 @@ Overall, the SRS is a foundational document that supports the development of saf
 - **MBD:** Model Based Development
 - **MC/DC:** Modified Condition/Decision Coverage
 - **OEM:** Original Equipment Manufacturer
+- **OS:** Operating System
 - **QM:** Quality Management
 - **RFQ:** Request For Quotation
-- **SEooC:** Safety Element out of Context
+- **SEooC:** Safety Element out of Context (see definition 3.138)
+- **SG:** Safety Goal (see definition 3.139)
 - **SW:** SoftWare
-- **SOP:** Start Of Production
-- **SG:** Safety Goal
 - **TCL:** Tool Confidence Level
 - **UML:** Unified Modeling Language
 - **XML:** eXtensible Markup Language
@@ -158,33 +183,6 @@ Overall, the SRS is a foundational document that supports the development of saf
 - **Terminology (ISO 26262):** Software detailed design
 - **Terminology (ASPICE):** Software detailed design
 
-**Process objective**
-- **Definition:** process element
-- **Purpose:** providing high-level goals to be achieved in each process area
-- **Examples:** to develop a software architectural design which satisfies the software requirements, higher level architectural design (e.g., system level) and which identifies the elements of the software and their interfaces.
-- **Elements:** -
-- **Example Elements:** -
-- **Terminology (ISO 26262):** Objective
-- **Terminology (ASPICE):** Process outcome
-
-**Process control**
-- **Definition:** process element
-- **Purpose:** providing a measurement to what degree process objectives are achieved
-- **Examples:** Number of elements from higher level architectural design (e.g., ECU variants, SOCs, sensors) with software portions for which no software architectural design is available yet (should be 0).
-- **Elements:** -
-- **Example Elements:** -
-- **Terminology (ISO 26262):** Metrics
-- **Terminology (ASPICE):** Metrics
-
-**Measurement**
-- **Definition:** process element
-- **Purpose:** contributing detailed product quality data for process controls
-- **Examples:** requirements coverage by test cases, structural code coverage (e.g., branch coverage), code complexity
-- **Elements:** -
-- **Example Elements:** -
-- **Terminology (ISO 26262):** Metrics
-- **Terminology (ASPICE):** Metrics
-
 **Baseline**
 - **Definition:** work product
 - **Purpose:** freezing all development artefacts at a given moment in time in order to be able to re-establish this state of development in the future
@@ -194,48 +192,12 @@ Overall, the SRS is a foundational document that supports the development of saf
 - **Terminology (ISO 26262):** Baseline
 - **Terminology (ASPICE):** Baseline
 
-**Calibration data specification**
-- **Definition:** work product
-- **Purpose:** providing the basis for introducing required variability after the software has been built.
-- **Examples:** characteristic maps, characteristic line, behaviour switches in the deployed software
-- **Elements:** Calibration data
-- **Example Elements:** Engine performance curves
-- **Terminology (ISO 26262):** Calibration data
-- **Terminology (ASPICE):** NA
-
-**Configuration data specification**
-- **Definition:** work product
-- **Purpose:** providing the basis for introducing required variability before the software has been built.
-- **Examples:** precompiler directives
-- **Elements:** Configuration data
-- **Example Elements:** Compiler switches controlling for which vehicle configuration the software is built
-- **Terminology (ISO 26262):** Configuration data
-- **Terminology (ASPICE):** NA
-
-**Quality measure**
-- **Definition:** process element
-- **Purpose:** providing quality indicators for the product or the applied processes.
-- **Examples:** Process audit, work product review, test report, confirmation measure
-- **Elements:** NA
-- **Example Elements:** NA
-- **Terminology (ISO 26262):** Confirmation measure
-- **Terminology (ASPICE):** NA
-
-**Process audit**
-- **Definition:** process element
-- **Purpose:** providing quality indicators for the applied processes.
-- **Examples:** safety audit, configuration management audit, software testing audit
-- **Elements:** NA
-- **Example Elements:** NA
-- **Terminology (ISO 26262):** Safety audit
-- **Terminology (ASPICE):** Assessment; internal audit
-
 **Work product review**
 - **Definition:** process element
 - **Purpose:** providing quality indicators for the product.
 - **Examples:** document reviews, specification reviews, code reviews
-- **Elements:** NA
-- **Example Elements:** NA
+- **Elements:** -
+- **Example Elements:** -
 - **Terminology (ISO 26262):** Safety assessment; software verification report; confirmation review
 - **Terminology (ASPICE):** Verification results
 
@@ -244,9 +206,9 @@ Overall, the SRS is a foundational document that supports the development of saf
 - **Purpose:** providing a list of pre-defined quality criteria for work product reviews.
 - **Examples:** configuration management plan review checklist, pull request review checklist, code inspection checklist, requirements review checklist
 - **Elements:** quality criteria
-- **Example Elements:** NA
-- **Terminology (ISO 26262):** NA
-- **Terminology (ASPICE):** NA
+- **Example Elements:** -
+- **Terminology (ISO 26262):** nan
+- **Terminology (ASPICE):** nan
 
 **Review report**
 - **Definition:** work product
@@ -256,6 +218,15 @@ Overall, the SRS is a foundational document that supports the development of saf
 - **Example Elements:** nan
 - **Terminology (ISO 26262):** Confirmation measure results (excluding safety audit results)
 - **Terminology (ASPICE):** Review evidence
+
+**Corrective action**
+- **Definition:** work product
+- **Purpose:** orchestrating mitigations to process or product related defects found.
+- **Examples:** improvement measures for assessment findings, mitigation measures to safety anomalies
+- **Elements:** -
+- **Example Elements:** -
+- **Terminology (ISO 26262):** nan
+- **Terminology (ASPICE):** Corrective action
 
 **Requirements specification**
 - **Definition:** work product
@@ -281,5 +252,14 @@ Overall, the SRS is a foundational document that supports the development of saf
 - **Examples:** walk-through, inspection, peer review, expert review
 - **Elements:** -
 - **Example Elements:** -
-- **Terminology (ISO 26262):** NA
+- **Terminology (ISO 26262):** -
 - **Terminology (ASPICE):** Review method
+
+**Risk and opportunity overview**
+- **Definition:** work product
+- **Purpose:** providing a basis for mitigating known risks and facilitating known opportunities.
+- **Examples:** -
+- **Elements:** risks, opportunities
+- **Example Elements:** -
+- **Terminology (ISO 26262):** Risk
+- **Terminology (ASPICE):** Improvement opportunity; risk

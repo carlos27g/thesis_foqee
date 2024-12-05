@@ -1,3 +1,20 @@
+"""
+This module contains data validation classes used for structured outcomes generation with the LLM
+for the step of generating context for work product.
+
+Classes:
+- PurposeModel
+- DescriptionModel
+- TermModel
+- TermListModel
+- DisambiguationEntryModel
+- DisambiguationModel
+- AbbreviationModel
+- AbbreviationListModel
+- ConceptsModel
+- WorkProductContextModel
+"""
+
 from pydantic import BaseModel, Field
 
 # ----------------- For Contextualization of WP ----------------- #
@@ -13,10 +30,6 @@ class DescriptionModel(BaseModel):
     uses: str = Field(..., description="The uses of the work product")
 
 # ----- For Concepts ----- #
-class GlossaryModel(BaseModel):
-    term: str = Field(..., description="The term in the glossary")
-    definition: str = Field(..., description="The definition of the term in the glossary")
-
 class TermModel (BaseModel):
     term: str = Field(..., description="The term in the glossary")
     definition: str = Field(..., description="The description of the term in the glossary")
