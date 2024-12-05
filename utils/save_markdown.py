@@ -119,7 +119,7 @@ def save_context_to_markdown(context: WorkProductContextModel, workproduct):
 
     # Determine the parent directory of the current working directory
     parent_dir = os.path.abspath(os.path.join(os.getcwd()))
-    markdowns_dir = os.path.join(parent_dir, 'markdowns_contexts')
+    markdowns_dir = os.path.join(parent_dir, 'markdowns', 'markdowns_contexts')
 
     # Create the 'markdowns' directory if it doesn't exist
     os.makedirs(markdowns_dir, exist_ok=True)
