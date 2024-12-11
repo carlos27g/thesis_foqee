@@ -10,6 +10,7 @@ from llm_services.send_prompt import send_prompt
 
 from utils.save_markdown import save_checklist_to_markdown
 from utils.save_models import save_models, load_models
+from utils.save_excel import generate_excel_from_checklist
 
 from modules.content_segmentation import (
     get_iso_knowledge, prompt_filter_requirement, group_by_topics)
@@ -103,6 +104,8 @@ def generate_wp_checklist(work_product: str,
         messages = [message_checklist]
     print("Generating checklist...")
     response = send_prompt(messages, ChecklistModel)
+    print("Saving excel file...")
+    generate_excel_from_checklist(response)
     return response
 
 
