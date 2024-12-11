@@ -22,6 +22,7 @@ Functions:
 import os
 
 from llm_services.prompts_content import prompt_filter_requirement, prompt_generate_topics
+from llm_services.prompts_context import process_disambiguation_entries
 from llm_services.models_content import (
     IdentifyTablesModel, IdentifyClausesModel, IdentifyExternalIdsModel, TopicslistModel,
     NoInfoModel)
@@ -156,7 +157,7 @@ def format_external_id_info(id_model) -> str:
         f"{id_model.subsubsection_number} found.")
 
 
-def group_by_topics(requriements_work_product: list[dict], messages_context: None) -> dict:
+def group_by_topics(requriements_work_product: list[dict], context: None) -> dict:
     """
     Groups content by specified topics or categories.
 
@@ -168,15 +169,18 @@ def group_by_topics(requriements_work_product: list[dict], messages_context: Non
     dict: The grouped data based on the specified criteria.
     """
     prompt = prompt_generate_topics(requriements_work_product)
-    message = {"role": "user", "content": prompt}
-    if messages_context:
-        messages_context.append(message)
-        response_topics = send_prompt(messages_context, TopicslistModel)
+    message_grouping = {"role": "user", "content": prompt}
+    if context:
+        disambiguation_entries = context.concepts.disambiguation.entries
+        prompt_disambiguation = process_disambiguation_entries(disambiguation_entries)
+        message_disambiguation = {"role": "user", "content": prompt_disambiguation}
+        response_topics = send_prompt([message_disambiguation, message_grouping], TopicslistModel)
     else:
-        response_topics = send_prompt([message], TopicslistModel)
+        response_topics = send_prompt([message_grouping], TopicslistModel)
     group_message_content = (
-        "This work product can be grouped by these topics: \n"
+        "This work product must be grouped under these categories\n"
         f"{response_topics.model_dump_json()}"
     )
+    print(group_message_content)
     group_message = {"role": "system", "content": group_message_content}
     return group_message

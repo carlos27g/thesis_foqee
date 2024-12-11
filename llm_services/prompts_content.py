@@ -519,18 +519,24 @@ def prompt_generate_topics(requirements_work_product: list[dict]) -> str:
     # Task Instructions
     prompt += (
         "**Task Instructions:**\n"
-        "1. **Review the provided requirements** to identify common themes or categories.\n"
-        "2. **Group the requirements** based on shared characteristics or topics.\n"
-        "3. **Create a list of topics** that represent the grouped requirements.\n"
-        "4. **Assign each requirement** to the corresponding topic or category.\n"
-        "5. **Ensure each topic is distinct** and covers a specific aspect of the requirements.\n"
-        "6. **Provide a brief description** for each topic to summarize the grouped requirements.\n"
-        "7. **Incorporate previous context** (if available) to resolve ambiguities and refine "
-        "the topics.\n\n"
+        "1. **Analyze the Requirements:** Carefully review the provided requirements to understand "
+        "their  intent and identify underlying themes or patterns.\n"
+        "**Incorporate Disambiguation:** If available, use disambiguation concepts to address "
+        "ambiguities and improve the accuracy of topic grouping.\n\n"
+        "2. **Categorize Requirements:** Group the requirements based on shared characteristics, "
+        "ensuring logical clustering.\n"
+        "3. **Develop Topic List:** Create a comprehensive list of topics or categories that "
+        "represent the grouped requirements effectively.\n"
+        "4. **Map Requirements to Topics:** Assign each requirement to its appropriate topic, "
+        "ensuring alignment with its characteristics.\n"
+        "5. **Validate Topic Clarity:** Confirm that each topic is distinct and focuses on a "
+        "specific aspect of the requirements without overlaps.\n"
+        "6. **Avoid Isolated Requirements:** Try not to leave individual requirements alone in a "
+        "single topic. Revisit and adjust grouping to ensure meaningful clusters.\n"
     )
 
     # Content to Group
-    prompt += "**Content to Group:**\n"
+    prompt += "**Requirements to Group:**\n"
     for _, req in requirements_work_product.items():
         prompt += (
             f"- **Requirement ID:** {req['Complete ID']}\n"

@@ -120,7 +120,7 @@ def gen_description(work_product, standards) -> dict:
     message_uses = {"role": "user", "content": uses_prompt}
     uses = send_prompt([message_uses])
     print("- Uses done.")
-    
+
     description_model = DescriptionModel(
         purpose=purpose,
         content=content,

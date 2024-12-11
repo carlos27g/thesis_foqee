@@ -19,6 +19,8 @@ Methods:
   Produces a prompt defining required content for the work product under compliance standards.
 - prompt_context(context: WorkProductContextModel, work_product: str) -> list[dict]:
   Consolidates context and generates a comprehensive prompt for the work product.
+- process_disambiguation_entries(disambiguation_entries: list) -> str:
+  Processes disambiguation entries and returns a formatted string.
 
 """
 
@@ -189,8 +191,8 @@ def prompt_abbreviations_extraction(work_product: str, abbreviations: list[dict]
     prompt += (
         "**Output Format:**\n"
         "Use the `AbbreviationListModel` function tool to define and process the result:\n"
-        "- The output should include an `abbreviations` attribute containing a list of abbreviation "
-        "entries.\n"
+        "- The output should include an `abbreviations` attribute containing a list of "
+        "abbreviation entries.\n"
         "- Each entry should follow the `AbbreviationModel` structure, including:\n"
         "  - `abbreviation`: The abbreviation.\n"
         "  - `definition`: The explanation or meaning of the abbreviation.\n"
@@ -467,32 +469,12 @@ def prompt_context(context: WorkProductContextModel, work_product) -> list[dict]
 
     # Consolidate Disambiguation Entries
     disambiguation_entries = context.concepts.disambiguation.entries
-    if disambiguation_entries:
-        disambiguation_content = (
-            f"In the work product '{work_product}', the following disambiguation concepts are "
-            "defined:\n"
-            "Use these concepts to understand how a single idea can be referred to by different "
-            "names in ISO 26262 and ASPICE. "
-            "This section also provides examples of their usage, helping to clarify their "
-            "application.\n"
-            "The concept names serve to unify the different terminologies, ensuring consistency "
-            "for the tasks in this work product.\n")
+    disambiguation_content = process_disambiguation_entries(disambiguation_entries)
+    messages.append({
+    "role": "user",
+    "content": disambiguation_content
+    })
 
-        for entry in disambiguation_entries:
-            disambiguation_content += (
-                f"\n- Concept: '{entry.concept}'\n"
-                f"  - Definition: {entry.definition}\n"
-                f"  - Purpose: {entry.purpose}\n"
-                f"  - Examples: {', '.join(entry.examples)}\n"
-                f"  - Elements: {', '.join(entry.elements)}\n"
-                f"  - Example elements: {', '.join(entry.example_elements)}\n"
-                f"  - ISO Terminology: {entry.terminology_iso26262}\n"
-                f"  - ASPICE Terminology: {entry.terminology_aspice}\n"
-            )
-        messages.append({
-            "role": "user",
-            "content": disambiguation_content
-        })
 
     # Consolidate Abbreviations
     abbreviations = context.concepts.abbreviations.abbreviations
@@ -512,3 +494,34 @@ def prompt_context(context: WorkProductContextModel, work_product) -> list[dict]
         })
 
     return messages
+
+
+def process_disambiguation_entries(disambiguation_entries) -> str:
+    """
+    Processes a list of disambiguation entries and returns a formatted string.
+
+    Args:
+        disambiguation_entries (list): List of disambiguation entries from the context.
+
+    Returns:
+        str: Formatted string summarizing the disambiguation entries.
+    """
+    if not disambiguation_entries:
+        return "No disambiguation entries were found for the current context."
+
+    disambiguation_content = (
+        "ISO terminology and ASPICE terminology often describe the same concepts but use "
+        "different words in each standard framework. Use the 'Concept' name to unify both "
+        "terminologies in future tasks.\n"
+        "Consider the following disambiguation entries relevant to the work product:\n"
+    )
+
+    for entry in disambiguation_entries:
+        disambiguation_content += (
+            f"\n- Concept: '{entry.concept or 'Unknown'}'\n"
+            f"  - Definition: {entry.definition or 'No definition provided.'}\n"
+            f"  - ISO Terminology: {entry.terminology_iso26262 or 'Not specified.'}\n"
+            f"  - ASPICE Terminology: {entry.terminology_aspice or 'Not specified.'}\n"
+        )
+
+    return disambiguation_content

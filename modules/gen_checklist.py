@@ -4,13 +4,14 @@ import os
 from termcolor import colored
 
 from llm_services.models_checklist import ChecklistModel
-from llm_services.models_content import DescriptionModel
+from llm_services.models_content import RequirementDescriptionModel
 from llm_services.prompts_checklist import prompt_generate_checklist
 from llm_services.prompts_context import prompt_context
 from llm_services.send_prompt import send_prompt
 
 from utils.save_markdown import save_checklist_to_markdown
 from utils.save_models import save_models, load_models
+from utils.save_excel import generate_excel_from_checklist
 
 from modules.content_segmentation import (
     get_iso_knowledge, prompt_filter_requirement, group_by_topics)
@@ -92,7 +93,7 @@ def generate_wp_checklist(work_product: str,
                 external_knowledge_message = get_iso_knowledge(requirement_info)
                 if external_knowledge_message:
                     messages_checklists.insert(0, external_knowledge_message)
-            response = send_prompt(messages_checklists, DescriptionModel)
+            response = send_prompt(messages_checklists, RequirementDescriptionModel)
             # Update the description with the filtered content
             requirement_info["Description"] = response.description
     messages_checklists = []
@@ -106,8 +107,8 @@ def generate_wp_checklist(work_product: str,
     if os.getenv("TOPIC_GROUPING") == "true":
         # Generate groups
         print(colored("Grouping requirements by topics", 'green'))
-        if context and messages_context:
-            groups_message = group_by_topics(checklists_work_product_content, messages_context)
+        if context:
+            groups_message = group_by_topics(checklists_work_product_content, context)
         else:
             groups_message = group_by_topics(checklists_work_product_content, None)
         if groups_message:
@@ -118,6 +119,8 @@ def generate_wp_checklist(work_product: str,
     messages_checklists.append(message_checklist)
     print("Generating checklist...")
     response = send_prompt(messages_checklists, ChecklistModel)
+    print("Saving excel file...")
+    generate_excel_from_checklist(response)
     return response
 
 

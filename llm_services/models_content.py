@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field
 
 
 # ------------------ Model Requirement Description ------------------ #
-class DescriptionModel(BaseModel):
+class RequirementDescriptionModel(BaseModel):
     """
     Represents the description of a requirement.
     """

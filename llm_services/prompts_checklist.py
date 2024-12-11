@@ -8,6 +8,8 @@ Functions:
   compliance of a specified work product within the ISO 26262 and ASPICE frameworks.
 """
 
+import os
+
 # ----------------- System Role ----------------- #
 def prompt_system_role() -> str:
     """Generates a the prompt used for the system role along this whole project."""
@@ -46,24 +48,22 @@ def prompt_generate_checklist(work_product, content) -> str:
         f"1. **Thoroughly analyze the provided content of requirements** related to compliance.\n"
         f"2. **Identify and group related requirements together** based on common themes or "
         f"topics.\n"
-        f"3. **For each checklist item:**\n"
-        f"   - Include the **IDs** of all the requirements that are relevant to the item.\n"
-        f"     - Present the IDs as a list.\n"
-        f"   - Provide a **title** for the item that encapsulates the main theme.\n"
-        f"   - Write a list of **specific, actionable questions** that guide the user on what "
-        f"needs to be addressed for compliance.\n"
-        f"     - Ensure the questions are closed questions (yes or no).\n"
-        f"     - Ensure the questions are clear and concise.\n\n"
     )
+    if os.getenv("TOPIC_GROUPING") == "true":
+        prompt += (
+            "In the previous messages, there is a list of topics and a grouping of the standards "
+            "that **must** be followed. Use this information when proceeding.\n"
+        )
 
     prompt += (
-        "Expected outcome:\n"
-        "Use the CheckListModel function tool to define and process a checklist for a specific "
-        "work product.\n"
-        "Ensure the output includes:\n"
-        "- The work product name.\n"
-        "- A detailed list of checklist items, each containing IDs, a title, and "
-        "associated descriptions.\n"
+        "3. **For each checklist item:**\n"
+        "   - Include the **IDs** of all the requirements that are relevant to the item.\n"
+        "     - Present the IDs as a list.\n"
+        "   - Provide a **title** for the item that encapsulates the main theme.\n"
+        "   - Write a list of **specific, actionable questions** that guide the user on what "
+        "needs to be addressed for compliance.\n"
+        "     - Ensure the questions are closed questions (yes or no).\n"
+        "     - Ensure the questions are clear and concise.\n\n"
     )
 
     prompt += "\n**Requirements Content:**\n"
