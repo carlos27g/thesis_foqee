@@ -36,7 +36,7 @@ def gen_context(df_standards) -> dict:
     Returns:
     - context (dict): Dictionary containing the context for each work product.
     """
-    # dataset from the ASPICE and ISO26262 standards 
+    # dataset from the ASPICE and ISO26262 standards
     work_products = df_standards['Work Product'].unique()
     df_standards_filtered = df_standards[['Work Product', 'ID', 'Description']]
     context = {}
@@ -100,7 +100,7 @@ def gen_description(work_product, standards) -> dict:
     """
     print(colored("Generating Description for Work Product:", "green"), work_product)
     print("Number of standards available: ", len(standards))
-    
+
     purpose_prompt = prompt_gen_purpose(work_product)
     message_purpose = {"role": "user", "content": purpose_prompt}
     purpose = send_prompt([message_purpose], PurposeModel)
@@ -133,7 +133,8 @@ def gen_description(work_product, standards) -> dict:
 
 def process_terminology(work_product, terminology_iso):
     """
-    Processes a list of ISO terminology terms in batches, consolidating them into a single TermListModel.
+    Processes a list of ISO terminology terms in batches, consolidating them into a single
+    TermListModel.
     Args:
         work_product (str): The work product to be used in the prompt.
         terminology_iso (list): A list of ISO terminology terms.
@@ -198,7 +199,7 @@ def process_abbreviations(work_product, abbreviations):
             abbreviations_model = AbbreviationListModel.model_validate(response)
             if abbreviations_model:
                 consolidated_abbreviation_model.abbreviations.extend( # pylint: disable=no-member
-                    abbreviations_model.abbreviations) 
+                    abbreviations_model.abbreviations)
     consolidated_abbreviation_model = AbbreviationListModel.model_validate(
         consolidated_abbreviation_model)
     return consolidated_abbreviation_model

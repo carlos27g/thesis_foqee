@@ -131,4 +131,3 @@ def save_context_to_markdown(context: WorkProductContextModel, workproduct):
         md_file.write("\n".join(md_content))  # Join the content list into a single string
 
     print(f"Markdown file '{filename}' has been created.")
-

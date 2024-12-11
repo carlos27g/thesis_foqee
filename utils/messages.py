@@ -19,8 +19,8 @@ from llm_services.models_content import (
     TableModel, IdentifyTablesModel, ClauseModel, ClauseSummaryModel, IdentifyClausesModel,
     RequirementIdModel, IdentifyExternalIdsModel)
 from llm_services.models_context import (
-    DescriptionModel, PurposeModel, TermModel, TermListModel, DisambiguationEntryModel, 
-    DisambiguationModel, AbbreviationModel, AbbreviationListModel, ConceptsModel, 
+    DescriptionModel, PurposeModel, TermModel, TermListModel, DisambiguationEntryModel,
+    DisambiguationModel, AbbreviationModel, AbbreviationListModel, ConceptsModel,
     WorkProductContextModel)
 
 
@@ -110,4 +110,3 @@ def save_messages(file_name, classification):
             else:
                 # Write other messages normally
                 f.write(f"Role: {role}\nMessage:\n{content}\n\n")
-

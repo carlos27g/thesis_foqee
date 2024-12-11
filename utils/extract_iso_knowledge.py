@@ -20,7 +20,7 @@ from llm_services.models_content import (
     IdentifyTablesModel, IdentifyClausesModel, TableModel, ClauseModel,
     IdentifyExternalIdsModel, RequirementIdModel, ClauseSummaryModel)
 from llm_services.prompts_content import (
-    prompt_identify_external_id, prompt_identify_clause, prompt_identify_table, 
+    prompt_identify_external_id, prompt_identify_clause, prompt_identify_table,
     create_clause_summary_prompt)
 from llm_services.send_prompt import send_prompt
 

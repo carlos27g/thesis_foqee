@@ -1,3 +1,7 @@
+"""
+Convert the terminology, disambiguation, and abbreviations tables to dictionaries.
+"""
+
 def create_dict_iso_terminology(iso_terminology_df):
     """
     Iterate through the rows of a DataFrame and create a dictionary for each row.
@@ -39,9 +43,13 @@ def create_dict_disambiguation(disambiguation_df):
             "concept": row.get("Concept"),
             "definition": row.get("is a", ""),
             "purpose": row.get("aiming at", ""),
-            "examples": [example.strip() for example in str(row.get("Examples", "")).split(";") if example.strip()],
-            "elements": [element.strip() for element in str(row.get("Its elements are", "")).split(";") if element.strip()],
-            "example_elements": [example.strip() for example in str(row.get("Example elements", "")).split(";") if example.strip()],
+            "examples": [example.strip() for example in 
+                         str(row.get("Examples", "")).split(";") if example.strip()],
+            "elements": [element.strip() for element in 
+                         str(row.get("Its elements are", "")).split(";") if element.strip()],
+            "example_elements": [example.strip() for example in 
+                                 str(row.get("Example elements", "")).split(";")
+                                 if example.strip()],
             "terminology_iso26262": row.get("Terminology ISO26262", ""),
             "terminology_aspice": row.get("Terminology in Automotive SPICE", "")
         }
