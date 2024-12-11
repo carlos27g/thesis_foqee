@@ -4,18 +4,19 @@ import os
 from termcolor import colored
 
 from llm_services.models_checklist import ChecklistModel
-from llm_services.models_content import DescriptionModel
+from llm_services.models_content import RequirementDescriptionModel
 from llm_services.prompts_checklist import prompt_generate_checklist
+from llm_services.prompts_context import prompt_context
 from llm_services.send_prompt import send_prompt
 
 from utils.save_markdown import save_checklist_to_markdown
 from utils.save_models import save_models, load_models
+from utils.save_excel import generate_excel_from_checklist
 
 from modules.content_segmentation import (
     get_iso_knowledge, prompt_filter_requirement, group_by_topics)
 
-
-def generate_checklists(dataframe):
+def generate_checklists(dataframe, context=None):
     """
     Generates checklists for each unique work product based on the provided dataframe. 
     If a checklist for a work product already exists and the environment variable 
@@ -49,15 +50,20 @@ def generate_checklists(dataframe):
         work_product_content = retrieve_work_product_content(work_product_rows)
 
         # Generate the checklist for the work product
-        checklist = generate_wp_checklist(work_product, work_product_content)
+        if context:
+            checklist = generate_wp_checklist(work_product, work_product_content,
+                                              context[work_product])
+        else:
+            checklist = generate_wp_checklist(work_product, work_product_content, None)
         checklist_model = ChecklistModel.model_validate(checklist)
         # Save the checklist
-        save_checklist_to_markdown(checklist_model)
+        save_checklist_to_markdown(checklist_model, work_product)
         save_models(f"{work_product} checklist", checklist_model)
 
 
 def generate_wp_checklist(work_product: str,
-                          checklists_work_product_content: list[dict]) -> ChecklistModel:
+                          checklists_work_product_content: list[dict],
+                          context: None) -> ChecklistModel:
     """
     Generates a checklist for a given work product by creating a prompt, sending it to the LLM, 
     and returning the generated response.
@@ -82,27 +88,39 @@ def generate_wp_checklist(work_product: str,
             filter_message = {"role": "user", "content": filter_prompt}
             print("- Filtering requirements content")
             # Retrieve external knowledge for ISO 26262
-            messages = [filter_message]
+            messages_checklists = [filter_message]
             if os.getenv("EXTRACT_ISO_KNOWLEDGE") == "true":
                 external_knowledge_message = get_iso_knowledge(requirement_info)
                 if external_knowledge_message:
-                    messages.insert(0, external_knowledge_message)
-            response = send_prompt(messages, DescriptionModel)
+                    messages_checklists.insert(0, external_knowledge_message)
+            response = send_prompt(messages_checklists, RequirementDescriptionModel)
             # Update the description with the filtered content
             requirement_info["Description"] = response.description
-    groups_message = None
+    messages_checklists = []
+    messages_context = []
+
+    if os.getenv("ADD_WP_CONTEXT") == "true" and context:
+        messages_context = prompt_context(context, work_product)
+        for message in messages_context:
+            messages_checklists.append(message)
+
     if os.getenv("TOPIC_GROUPING") == "true":
         # Generate groups
         print(colored("Grouping requirements by topics", 'green'))
-        groups_message = group_by_topics(checklists_work_product_content)
+        if context:
+            groups_message = group_by_topics(checklists_work_product_content, context)
+        else:
+            groups_message = group_by_topics(checklists_work_product_content, None)
+        if groups_message:
+            messages_checklists.append(groups_message)
+
     prompt = prompt_generate_checklist(work_product, checklists_work_product_content)
     message_checklist = {"role": "user", "content": prompt}
-    if groups_message:
-        messages = [groups_message, message_checklist]
-    else:
-        messages = [message_checklist]
+    messages_checklists.append(message_checklist)
     print("Generating checklist...")
-    response = send_prompt(messages, ChecklistModel)
+    response = send_prompt(messages_checklists, ChecklistModel)
+    print("Saving excel file...")
+    generate_excel_from_checklist(response)
     return response
 
 

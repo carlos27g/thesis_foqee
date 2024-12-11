@@ -118,16 +118,16 @@ def process_combined_data(df):
     Returns:
         pd.DataFrame: Processed DataFrame.
     """
+    df = df.assign(**{'Work Product': df['Work Product'].str.split('\n')}).explode('Work Product')
+    df.dropna(subset=['Work Product'], inplace=True)
+
     if os.getenv("RESTRICT_WORK_PRODUCTS") == "true":
         df = df[
             (df['Work Product'] == 'Software Requirements Specification') |
             (df['Work Product'] == 'Software Architecture Specification')
         ]
 
-    df = df.assign(**{'Work Product': df['Work Product'].str.split('\n')}).explode('Work Product')
-    df.dropna(subset=['Work Product'], inplace=True)
-
-    # Add metadata columns
+    # Add columns
     metadata_columns = ['Standard Name', 'Version', 'Part', 'Clause', 'Section', 'Subsection',
                         'Subsubsection']
     for col in metadata_columns:

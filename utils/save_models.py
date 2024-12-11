@@ -45,6 +45,10 @@ def load_models(file_name: str, base_model: BaseModel) -> BaseModel:
     folder_name = "models_saved"
     file_path = os.path.join(folder_name, f"{file_name}.pkl")
 
+    if not os.path.exists(file_path):
+        print(f"No model found at {file_path}")
+        return None
+
     with open(file_path, "rb") as file:
         model_dict = pickle.load(file)
 

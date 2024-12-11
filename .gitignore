@@ -3,6 +3,7 @@ messages/
 markdowns/
 models_saved/
 datasets/
+checklist_excel/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
