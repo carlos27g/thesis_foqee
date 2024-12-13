@@ -9,6 +9,7 @@ from llm_services.send_prompt import send_prompt
 
 from utils.save_markdown import save_checklist_to_markdown
 from utils.save_models import save_models, load_models
+from utils.save_excel import generate_excel_from_checklist
 
 
 def generate_checklists(dataframe):
@@ -50,6 +51,7 @@ def generate_checklists(dataframe):
         # Save the checklist
         save_checklist_to_markdown(checklist_model)
         save_models(f"{work_product} checklist", checklist_model)
+        generate_excel_from_checklist(checklist_model)
 
 
 def generate_wp_checklist(work_product, checklists_work_product_content):
