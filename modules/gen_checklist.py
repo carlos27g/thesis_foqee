@@ -11,7 +11,7 @@ from llm_services.send_prompt import send_prompt
 
 from utils.save_markdown import save_checklist_to_markdown
 from utils.save_models import save_models, load_models
-from utils.save_excel import generate_excel_from_checklist
+from utils.gen_excel_evaluation import create_excel_evaluation_sheet
 
 from modules.content_segmentation import (
     get_iso_knowledge, prompt_filter_requirement, group_by_topics)
@@ -56,6 +56,10 @@ def generate_checklists(dataframe, context=None):
         else:
             checklist = generate_wp_checklist(work_product, work_product_content, None)
         checklist_model = ChecklistModel.model_validate(checklist)
+
+        # Generate the Excel evaluation sheets
+        create_excel_evaluation_sheet(checklist_model, work_product_rows)
+
         # Save the checklist
         save_checklist_to_markdown(checklist_model, work_product)
         save_models(f"{work_product} checklist", checklist_model)
@@ -119,8 +123,6 @@ def generate_wp_checklist(work_product: str,
     messages_checklists.append(message_checklist)
     print("Generating checklist...")
     response = send_prompt(messages_checklists, ChecklistModel)
-    print("Saving excel file...")
-    generate_excel_from_checklist(response)
     return response
 
 
