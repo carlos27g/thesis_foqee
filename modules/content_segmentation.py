@@ -181,6 +181,5 @@ def group_by_topics(requriements_work_product: list[dict], context: None) -> dic
         "This work product must be grouped under these categories\n"
         f"{response_topics.model_dump_json()}"
     )
-    print(group_message_content)
     group_message = {"role": "system", "content": group_message_content}
     return group_message
