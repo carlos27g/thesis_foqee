@@ -50,7 +50,7 @@ def generate_checklists(dataframe):
         checklist_model = ChecklistModel.model_validate(checklist)
 
         # Create an Excel evaluation sheets
-        create_excel_evaluation_sheets(checklist_model, dataframe)
+        create_excel_evaluation_sheets(checklist_model, work_product_rows)
 
         # Save the checklist
         save_checklist_to_markdown(checklist_model)
