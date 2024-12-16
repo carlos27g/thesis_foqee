@@ -1,9 +1,6 @@
 """
-This module provides functionality to generate an Excel file from a ChecklistModel
-and save it in a specified directory.
-
-Functions:
-    generate_excel_from_checklist_v3(checklist: ChecklistModel) -> Path:
+This module provides functionality to generate Excel sheets for evaluating checklists.
+Each checklist will be saved in the 'checklist_excel' folder in the current directory.
 """
 
 import os
