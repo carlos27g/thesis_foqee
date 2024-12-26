@@ -35,11 +35,11 @@
             "envFile": "${workspaceFolder}/.env",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
-                "CHATGPT_MODEL": "gpt-4o-mini",
+                "CHATGPT_MODEL": "gpt-4o",
                 "MODEL_TEMPERATURE": "0.0",
                 "MAX_TRIES_STRUCTURED_OUTPUT": "3",
-                "EVALUATE_QUESTION_LEVEL": "false",
-                "EVALUATE_CHECKLIST_LEVEL": "false",
+                "EVALUATE_QUESTION_LEVEL": "true",
+                "EVALUATE_CHECKLIST_LEVEL": "true",
                 "EVALUATE_REQUIREMENTS_LEVEL": "true"
             }
         }

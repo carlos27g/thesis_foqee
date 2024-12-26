@@ -24,7 +24,9 @@ def prompt_evaluation_question_level(work_product: str, topic: str, questions: s
         requirements (pd.DataFrame): A DataFrame with columns 'ID' and 'Description' containing 
         requirement IDs and their descriptions.
     """
-    requirements_list = "\n".join([f"- {row['ID']}: {row['Description']}" for _, row in requirements.iterrows()])
+    requirements_list = "\n".join(
+        [f"- {row['ID']}: {row['Description']}" for _, row in requirements.iterrows()]
+    )
 
     prompt = (
         f"In the context of the work product '{work_product}' in ISO26262 and Automotive Spice "
@@ -62,8 +64,10 @@ def prompt_evaluation_checklist_level(checklist: pd.DataFrame) -> str:
         "In the context of the ISO26262 and Automotive Spice Frameworks, we are evaluating the "
         "checklist at the checklist level.\n"
         "Please evaluate the checklist based on the following metrics:\n\n"
-        "1. Applicability: is the granularity of the checklist such that it is usable in practice? (Rate from 1 to 3, where 3 is the best)\n"        
-        "2. Consistency: are the checklist items free from contradictions? (Rate from 1 to 3, where 3 is the best)\n"
+        "1. Applicability: is the granularity of the checklist such that it is usable in "
+        "practice? (Rate from 1 to 3, where 3 is the best)\n"        
+        "2. Consistency: are the checklist items free from contradictions? (Rate from 1 to 3, "
+        "where 3 is the best)\n"
     )
 
     prompt += (

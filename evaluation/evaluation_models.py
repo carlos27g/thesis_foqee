@@ -1,3 +1,17 @@
+"""
+This module defines Pydantic models for evaluating the checklist on a question level, 
+checklists level, and requirements level, based on various criteria.
+
+Classes:
+    EvaluationQuestionModel: Based on traceability, correctness, redundancy, and 
+                             applicability.
+    EvaluationChecklistModel: Based on applicability and consistency.
+    EvaluationRequirementModel: Based on traceability and completeness.
+
+Each model includes fields for the criteria and accompanying notes providing arguments or 
+explanations for the given qualifications.
+"""
+
 from pydantic import BaseModel, Field
 
 class EvaluationQuestionModel(BaseModel):

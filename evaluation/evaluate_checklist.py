@@ -13,8 +13,11 @@ import os
 import pandas as pd
 from termcolor import colored
 
-from evaluation.evaluation_models import EvaluationQuestionModel, EvaluationRequirementModel, EvaluationChecklistModel
-from evaluation.prompts_evaluation import prompt_evaluation_question_level, prompt_evaluation_checklist_level, prompt_evaluation_requirements_level
+from evaluation.evaluation_models import (
+    EvaluationQuestionModel, EvaluationRequirementModel, EvaluationChecklistModel)
+from evaluation.prompts_evaluation import (
+    prompt_evaluation_question_level, prompt_evaluation_checklist_level,
+    prompt_evaluation_requirements_level)
 
 from llm_services.send_prompt import send_prompt
 
@@ -89,7 +92,7 @@ def evaluate_question_level(requirements: pd.DataFrame):
                 work_product = row["Work Product"]
                 topic = row["Topic"]
                 questions = row["Questions"]
-                prompt = prompt_evaluation_question_level(work_product, topic, questions, 
+                prompt = prompt_evaluation_question_level(work_product, topic, questions,
                                                           matching_requirements)
                 message = [{"role": "user", "content": prompt}]
                 evaluation_answ = send_prompt(message, EvaluationQuestionModel)

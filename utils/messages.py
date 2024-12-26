@@ -24,8 +24,7 @@ from llm_services.models_context import (
     WorkProductContextModel)
 
 from evaluation.evaluation_models import (
-    EvaluationQuestionModel, EvaluationChecklistModel, EvaluationRequirementModel)
-                                        
+    EvaluationQuestionModel, EvaluationChecklistModel, EvaluationRequirementModel)         
 
 
 messages_unclassified = []
