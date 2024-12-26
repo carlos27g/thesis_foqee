@@ -41,6 +41,13 @@ def generate_checklists(dataframe, context=None):
             if checklist:
                 print(colored(
                     f"Checklist for work product {work_product} already exists.", 'green'))
+                # Generate the Excel evaluation sheets
+                work_product_rows = dataframe[dataframe['Work Product'] == work_product]
+                create_excel_evaluation_sheet(checklist, work_product_rows)
+
+                # Save the checklist
+                save_checklist_to_markdown(checklist, work_product)
+                save_models(f"{work_product} checklist", checklist)
                 continue
 
         print(colored(f"Generating checklist for work product: {work_product}", 'green'))

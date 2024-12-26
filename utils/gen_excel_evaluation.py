@@ -40,7 +40,8 @@ def generate_checklist_excel(checklist: ChecklistModel):
     data = {
         "Work Product": [],
         "Topic": [],
-        "Checklist Item": [],
+        "Questions": [],
+        "IDs": []
     }
 
     for item in checklist.checklist_items:
@@ -48,8 +49,9 @@ def generate_checklist_excel(checklist: ChecklistModel):
         data["Topic"].append(item.title)
         questions = "\n".join([f"{i + 1}. {q}" for i, q in enumerate(item.description)])
         ids = "\n".join(item.ids)
-        checklist_item_content = f"**Questions:**\n{questions}\n\n**IDs:**\n{ids}"
-        data["Checklist Item"].append(checklist_item_content)
+        checklist_item_content = f"{questions}\n"
+        data["Questions"].append(checklist_item_content)
+        data["IDs"].append(ids)
 
     df = pd.DataFrame(data)
     excel_file_path = output_folder / f"{checklist.work_product}_checklist.xlsx"
@@ -71,7 +73,7 @@ def gen_evaluation_requirements_level(requirements: pd.DataFrame,
     Returns:
         None
     """
-    output_folder = Path(os.path.join(os.getcwd(), "checklist_excel", "requirements_level"))
+    output_folder = Path(os.path.join(os.getcwd(), "checklist_excel", "requirement_level"))
     output_folder.mkdir(exist_ok=True)
 
     checklist_data = []
