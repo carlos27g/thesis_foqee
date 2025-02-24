@@ -52,7 +52,15 @@ def prompt_generate_checklist(work_product, content) -> str:
         f"needs to be addressed for compliance.\n"
         f"     - Ensure the questions are closed questions (yes or no).\n"
         f"     - Ensure the questions are clear and concise.\n\n"
-        f"**Content to use for generating the Checklist:**\n"
+        f"**Expected Outcome:**\n"
+        f"The checklist should follow the structure defined in the ChecklistModel, which includes:\n"
+        f"- **Checklist Item ID**: A unique identifier for each checklist item.\n"
+        f"- **Title**: A brief title summarizing the checklist item.\n"
+        f"- **Requirement IDs**: A list of requirement IDs related to the checklist item.\n"
+        f"- **Questions**: A list of specific, actionable yes/no questions for compliance.\n\n"
+        )
+    prompt += (
+        f"**List of requirements for generating the Checklist:**\n"
     )
     for req_id, details in content.items():
         prompt += (
@@ -60,3 +68,4 @@ def prompt_generate_checklist(work_product, content) -> str:
             f"  - **Description:** {details['Description']}\n"
         )
     return prompt
+
