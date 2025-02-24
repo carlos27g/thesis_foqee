@@ -24,7 +24,7 @@ from llm_services.models_context import (
     WorkProductContextModel)
 
 from evaluation.evaluation_models import (
-    EvaluationQuestionModel, EvaluationChecklistModel, EvaluationRequirementModel)         
+    RubricQuestionModel, EvaluationChecklistModel, EvaluationRequirementModel)         
 
 
 messages_unclassified = []
@@ -86,7 +86,7 @@ def classify_basemodel(basemodel):
     )):
         return "context_generation"
     if issubclass(basemodel, (
-        EvaluationQuestionModel, EvaluationChecklistModel, EvaluationRequirementModel
+        RubricQuestionModel, EvaluationChecklistModel, EvaluationRequirementModel
         )):
         return "evaluation"
     return "unclassified"

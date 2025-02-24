@@ -14,15 +14,19 @@ Function:
 import pandas as pd
 
 def prompt_evaluation_question_level(work_product: str, topic: str, questions: str,
-                                     requirements: pd.DataFrame) -> str:
+                                     requirements: pd.DataFrame, rubric: str) -> str:
     """
     Generates a prompt to evaluate a question based on predefined metrics.
+
     Parameters:
         work_product (str): The name or description of the work product.
         topic (str): The topic related to the generated question.
-        question (str): The question being evaluated.
+        questions (str): The question being evaluated.
         requirements (pd.DataFrame): A DataFrame with columns 'ID' and 'Description' containing 
         requirement IDs and their descriptions.
+
+    Returns:
+        str: The generated prompt.
     """
     requirements_list = "\n".join(
         [f"- {row['ID']}: {row['Description']}" for _, row in requirements.iterrows()]
@@ -30,73 +34,101 @@ def prompt_evaluation_question_level(work_product: str, topic: str, questions: s
 
     prompt = (
         f"In the context of the work product '{work_product}' in ISO26262 and Automotive Spice "
-        f"Frameworks, we are evaluating the questions:\n"
+        f"Frameworks, we are evaluating the following question(s):\n"
         f"\n    '{questions}'\n"
         f"\nThis question was generated in relation to the topic '{topic}' using the following "
         f"requirements:\n"
         f"{requirements_list}\n\n"
-        "Please evaluate the question based on the following metrics:\n\n"
-        "1. Traceability: Provide a qualification between 1 and 3 (3 being the best) indicating "
-        "if each question is traced to at least one requirement. Provide a note explaining the "
-        "qualification.\n"
-        "2. Correctness: Provide a qualification between 1 and 3 (3 being the best) indicating if "
-        "the question captures at least part of the information from the requirements it traces "
-        "to. Provide a note explaining the qualification.\n"
-        "3. Redundancy: Provide a qualification between 1 and 3 (3 being the best) indicating if "
-        "the question is free of criteria that are not derived from any traced requirement. "
-        "Provide a note explaining the qualification.\n"
-        "4. Applicability: Provide a qualification between 1 and 3 (3 being the best) indicating "
-        "if the question can be answered by looking just at the work product. Provide a note "
-        "explaining the qualification.\n\n"
-        "Your response should include integer values for the metrics and detailed notes for each "
-        "qualification.\n"
+        "Please evaluate the question(s) based on the following criteria:\n\n"
     )
-
-    prompt += "\nUse the format from the EvaluationQuestionModel to provide your response.\n"
+    if rubric == "correctness":
+        prompt += (
+            "**Correctness**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
+            "the question captures at least part of the information from the requirements it traces to. "
+            "Include a note explaining the reasoning.\n\n"
+            "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
+        )
+    elif rubric == "redundancy":
+        prompt += (
+            "**Redundancy**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
+            "the question is free of unnecessary or unrelated criteria. Include a note explaining the reasoning.\n\n"
+            "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
+        )
+    elif rubric == "applicability":
+        prompt += (
+            "**Applicability**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
+            "the question can be answered by referencing only the work product. Include a note explaining the reasoning.\n\n"
+            "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
+        )
+    elif rubric == "traceability":
+        prompt += (
+            "**Traceability**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
+            "the question is traced to at least one requirement. Include a note explaining the reasoning.\n\n"
+            "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
+        )
+    else:
+        raise ValueError("Invalid rubric provided.")
     return prompt
 
 
-def prompt_evaluation_checklist_level(checklist: pd.DataFrame) -> str:
+def prompt_evaluation_checklist_level(checklist: pd.DataFrame, rubric: str) -> str:
     """
-    Write a function that evaluates the checklist at the checklist level.
+    Generates a prompt to evaluate a checklist at the checklist level.
+
+    Parameters:
+        checklist (pd.DataFrame): The checklist items to be evaluated.
+        rubric (str): The rubric to be used for evaluation.
+
+    Returns:
+        str: The generated prompt.
     """
     prompt = (
         "In the context of the ISO26262 and Automotive Spice Frameworks, we are evaluating the "
-        "checklist at the checklist level.\n"
-        "Please evaluate the checklist based on the following metrics:\n\n"
-        "1. Applicability: is the granularity of the checklist such that it is usable in "
-        "practice? (Rate from 1 to 3, where 3 is the best)\n"        
-        "2. Consistency: are the checklist items free from contradictions? (Rate from 1 to 3, "
-        "where 3 is the best)\n"
-    )
-
-    prompt += (
+        "checklist at the checklist level.\n\n"
         "The checklist to be evaluated is as follows:\n"
         f"{checklist.to_string()}\n\n"
+        "Please evaluate the checklist based on the following criteria:\n\n"
     )
 
-    prompt += "\nUse the format from the EvaluationQuestionModel to provide your response.\n"
+    if rubric == "applicability":
+        prompt += (
+            "**Applicability**: Rate the checklist's granularity and practical usability (1 to 3, "
+            "where 3 is the best). Provide a note explaining the reasoning.\n\n"
+            "Use the format from the `EvaluationChecklistModel` to structure your response, including "
+            "ratings and detailed notes for each criterion.\n"
+        )
+    elif rubric == "consistency":
+        prompt += (
+            "**Consistency**: Rate whether the checklist items are free from contradictions (1 to 3, "
+            "where 3 is the best). Provide a note explaining the reasoning.\n\n"
+            "Use the format from the `EvaluationChecklistModel` to structure your response, including "
+            "ratings and detailed notes for each criterion.\n"
+        )
+    else:
+        raise ValueError("Invalid rubric provided.")
+    
     return prompt
 
 
 def prompt_evaluation_requirements_level(work_product: str, requirement_id: str, description: str,
-                                         checklist_items: list[str, str, str]) -> str:
+                                         checklist_items: list[tuple[str, str, str]], rubric: str) -> str:
     """
-    Write a function that evaluates the checklist at the requirements level.
+    Generates a prompt to evaluate a requirement at the requirements level.
+
+    Parameters:
+        work_product (str): The name or description of the work product.
+        requirement_id (str): The ID of the requirement.
+        description (str): A brief description of the requirement.
+        checklist_items (list[tuple[str, str, str]]): A list of tuples containing title, questions, 
+                                                      and requirement IDs for the checklist items.
+        rubric (str): The rubric to be used for evaluation.
+
+    Returns:
+        str: The generated prompt.
     """
     prompt = (
         "In the context of the ISO26262 and Automotive Spice Frameworks, we are evaluating the "
-        "checklist at the requirements level.\n"
-        "Please evaluate the checklist based on the following metrics:\n\n"
-        "1. Traceability: is each requirement traced to at least one question? (Rate from 1 to "
-        "3, where 3 is the best)\n"
-        "2. Completeness: assess if the information in the different checklist items is enough to "
-        "capture the relevant information of the requirement. The checklist items may contain "
-        "information from other requirements, but focus only on whether the requirement's "
-        "information is adequately captured. (Rate from 1 to 3, where 3 is the best)\n"
-    )
-
-    prompt += (
+        "checklist at the requirements level.\n\n"
         "The requirement to be evaluated is as follows:\n"
         f"Work Product: {work_product}\n"
         f"Requirement ID: {requirement_id}\n"
@@ -111,5 +143,24 @@ def prompt_evaluation_requirements_level(work_product: str, requirement_id: str,
             f"Requirement IDs: {req_ids}\n\n"
         )
 
-    prompt += "\nUse the format from the EvaluationRequirementModel to provide your response.\n"
+    prompt += "Please evaluate the checklist based on the following criteria:\n\n"
+
+    if rubric == "traceability":
+        prompt += (
+            "**Traceability**: Rate whether the requirement is traced to at least one checklist "
+            "question (1 to 3, where 3 is the best). Provide a note explaining the reasoning.\n"
+        )
+    elif rubric == "completeness":
+        prompt += (
+            "**Completeness**: Assess whether the information in the checklist items adequately "
+            "captures the relevant details of the requirement (1 to 3, where 3 is the best). Provide a "
+            "note explaining the reasoning.\n"
+        )
+    else:
+        raise ValueError("Invalid rubric provided.")
+
+    prompt += (
+        "Use the format from the `EvaluationRequirementModel` to structure your response, including "
+        "ratings and detailed notes for each criterion.\n"
+    )
     return prompt

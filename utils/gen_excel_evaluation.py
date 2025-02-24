@@ -14,7 +14,7 @@ import pandas as pd
 from termcolor import colored
 
 from evaluation.evaluation_models import (
-    EvaluationQuestionModel, EvaluationRequirementModel, EvaluationChecklistModel)
+    RubricQuestionModel, EvaluationRequirementModel, EvaluationChecklistModel)
 from evaluation.prompts_evaluation import (
     prompt_evaluation_question_level, prompt_evaluation_checklist_level,
     prompt_evaluation_requirements_level)
@@ -81,7 +81,7 @@ def evaluate_question_level(requirements: pd.DataFrame):
                 prompt = prompt_evaluation_question_level(work_product, topic, questions,
                                                           matching_requirements)
                 message = [{"role": "user", "content": prompt}]
-                evaluation_answ = send_prompt(message, EvaluationQuestionModel)
+                evaluation_answ = send_prompt(message, RubricQuestionModel)
 
                 # Update DataFrame with evaluation results
                 df_questions.at[index, "Traceability"] = evaluation_answ.traceability

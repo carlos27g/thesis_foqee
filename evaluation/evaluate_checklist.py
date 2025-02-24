@@ -14,7 +14,7 @@ import pandas as pd
 from termcolor import colored
 
 from evaluation.evaluation_models import (
-    EvaluationQuestionModel, EvaluationRequirementModel, EvaluationChecklistModel)
+    RubricQuestionModel, RubricChecklistModel, RubricRequirementModel)
 from evaluation.prompts_evaluation import (
     prompt_evaluation_question_level, prompt_evaluation_checklist_level,
     prompt_evaluation_requirements_level)
@@ -92,20 +92,39 @@ def evaluate_question_level(requirements: pd.DataFrame):
                 work_product = row["Work Product"]
                 topic = row["Topic"]
                 questions = row["Questions"]
-                prompt = prompt_evaluation_question_level(work_product, topic, questions,
-                                                          matching_requirements)
-                message = [{"role": "user", "content": prompt}]
-                evaluation_answ = send_prompt(message, EvaluationQuestionModel)
+                # Evaluate traceability
+                prompt_traceability = prompt_evaluation_question_level(work_product, topic, questions,
+                                                                        matching_requirements, "traceability")
+                message = [{"role": "user", "content": prompt_traceability}]
+                traceability_model = send_prompt(message, RubricQuestionModel)
+                
+                # Evaluate correctness
+                prompt_correctness = prompt_evaluation_question_level(work_product, topic, questions,
+                                                                        matching_requirements, "correctness")
+                message = [{"role": "user", "content": prompt_correctness}]
+                correcctness_model = send_prompt(message, RubricQuestionModel)
+                
+                # Evaluate redundancy
+                prompt_redundancy = prompt_evaluation_question_level(work_product, topic, questions,
+                                                                    matching_requirements, "redundancy")
+                message = [{"role": "user", "content": prompt_redundancy}]
+                redundancy_model = send_prompt(message, RubricQuestionModel)
+
+                # Evaluate applicability
+                prompt_applicability = prompt_evaluation_question_level(work_product, topic, questions,
+                                                                        matching_requirements, "applicability")
+                message = [{"role": "user", "content": prompt_applicability}]
+                applicability_model = send_prompt(message, RubricQuestionModel)
 
                 # Update DataFrame with evaluation results
-                df_questions.at[index, "Traceability"] = evaluation_answ.traceability
-                df_questions.at[index, "Traceability Notes"] = evaluation_answ.traceability_notes
-                df_questions.at[index, "Correctness"] = evaluation_answ.correctness
-                df_questions.at[index, "Correctness Notes"] = evaluation_answ.correctness_notes
-                df_questions.at[index, "Redundancy"] = evaluation_answ.redundancy
-                df_questions.at[index, "Redundancy Notes"] = evaluation_answ.redundancy_notes
-                df_questions.at[index, "Applicability"] = evaluation_answ.applicability
-                df_questions.at[index, "Applicability Notes"] = evaluation_answ.applicability_notes
+                df_questions.at[index, "Traceability"] = traceability_model.score
+                df_questions.at[index, "Traceability Notes"] = traceability_model.notes
+                df_questions.at[index, "Correctness"] = correcctness_model.score
+                df_questions.at[index, "Correctness Notes"] = correcctness_model.notes
+                df_questions.at[index, "Redundancy"] = redundancy_model.score
+                df_questions.at[index, "Redundancy Notes"] = redundancy_model.notes
+                df_questions.at[index, "Applicability"] = applicability_model.score
+                df_questions.at[index, "Applicability Notes"] = applicability_model.notes
 
             output_folder = os.path.join("checklist_auto_evaluation", "question_level")
             os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
@@ -134,15 +153,20 @@ def evaluate_checklist_level():
             df_questions["Consistency Notes"] = ""
 
             print(colored(f"Evaluating {file_name} at question level", "green"))
-
-            prompt = prompt_evaluation_checklist_level(df_questions)
+            # Evaluate traceability
+            prompt = prompt_evaluation_checklist_level(df_questions, "applicability")
             message = [{"role": "user", "content": prompt}]
-            evaluation_answ = send_prompt(message, EvaluationChecklistModel)
+            traceability_model = send_prompt(message, RubricChecklistModel)
 
-            df_questions[1, "Applicability"] = evaluation_answ.applicability
-            df_questions[1, "Applicability Notes"] = evaluation_answ.applicability_notes
-            df_questions[1, "Consistency"] = evaluation_answ.consistency
-            df_questions[1, "Consistency Notes"] = evaluation_answ.consistency_notes
+            # Evaluate correctness
+            prompt = prompt_evaluation_checklist_level(df_questions, "consistency")
+            message = [{"role": "user", "content": prompt}]
+            correctness_model = send_prompt(message, RubricChecklistModel)
+
+            df_questions[1, "Applicability"] = traceability_model.score
+            df_questions[1, "Applicability Notes"] = traceability_model.notes
+            df_questions[1, "Consistency"] = correctness_model.score
+            df_questions[1, "Consistency Notes"] = correctness_model.notes
 
             output_folder = os.path.join("checklist_auto_evaluation", "checklist_level")
             os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
@@ -181,20 +205,26 @@ def evaluate_requirements_level():
                 description = name[2]
                 print(f"- Evaluating requirement ID: {requirement_id}")
                 checklist_items = group[["Title", "Questions", "List_Ids"]].values.tolist()
+                # Evaluate traceability
+                prompt_traceability = prompt_evaluation_requirements_level(work_product, requirement_id,
+                                                                            description, checklist_items, "traceability")
+                message = [{"role": "user", "content": prompt_traceability}]
+                traceability_model = send_prompt(message, RubricRequirementModel)
 
-                prompt = prompt_evaluation_requirements_level(work_product, requirement_id,
-                                                              description, checklist_items)
-                message = [{"role": "user", "content": prompt}]
-                evaluation_answ = send_prompt(message, EvaluationRequirementModel)
-
+                # Evaluate completeness
+                prompt_completeness = prompt_evaluation_requirements_level(work_product, requirement_id,
+                                                                         description, checklist_items, "completeness")
+                message = [{"role": "user", "content": prompt_completeness}]
+                completeness_model = send_prompt(message, RubricRequirementModel)
+                
                 df_requirements.loc[df_requirements["ID"] == name, "Traceability"] = \
-                    evaluation_answ.traceability
+                    traceability_model.score
                 df_requirements.loc[df_requirements["ID"] == name, "Traceability Notes"] = \
-                    evaluation_answ.traceability_notes
+                    traceability_model.notes
                 df_requirements.loc[df_requirements["ID"] == name, "Completeness"] = \
-                    evaluation_answ.completeness
+                    completeness_model.score
                 df_requirements.loc[df_requirements["ID"] == name, "Completeness Notes"] = \
-                    evaluation_answ.completeness_notes
+                    completeness_model.notes
 
             output_folder = os.path.join("checklist_auto_evaluation", "requirements_level")
             os.makedirs(output_folder, exist_ok=True)  # Ensure the folder exists
