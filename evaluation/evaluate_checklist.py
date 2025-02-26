@@ -49,11 +49,11 @@ def evaluate_checklist():
 
     if os.getenv("EVALUATE_QUESTION_LEVEL") == "true":
         print(colored("Starting question level evaluation...", "blue"))
-        evaluate_question_level(requirements)
+        #evaluate_question_level(requirements)
 
     if os.getenv("EVALUATE_CHECKLIST_LEVEL") == "true":
         print(colored("Starting checklist level evaluation...", "blue"))
-        evaluate_checklist_level()
+        #evaluate_checklist_level()
 
     if os.getenv("EVALUATE_REQUIREMENTS_LEVEL") == "true":
         print(colored("Starting requirements level evaluation...", "blue"))

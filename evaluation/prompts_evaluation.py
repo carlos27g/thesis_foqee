@@ -43,27 +43,31 @@ def prompt_evaluation_question_level(work_product: str, topic: str, questions: s
     )
     if rubric == "correctness":
         prompt += (
-            "**Correctness**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
-            "the question captures at least part of the information from the requirements it traces to. "
-            "Include a note explaining the reasoning.\n\n"
+            "**Correctness**: Does each checklist question accurately reflect the content or intent "
+            "of the corresponding requirement, even if it captures only part of it? Provide a qualification "
+            "(1 to 3, where 3 is the best) and include a note explaining the reasoning.\n\n"
             "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
         )
     elif rubric == "redundancy":
         prompt += (
             "**Redundancy**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
-            "the question is free of unnecessary or unrelated criteria. Include a note explaining the reasoning.\n\n"
+            "each checklist question is free of any additional criteria not directly derived from its associated "
+            "requirement(s), avoiding unnecessary or extraneous information. Include a note explaining the reasoning.\n\n"
             "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
         )
     elif rubric == "applicability":
         prompt += (
-            "**Applicability**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
-            "the question can be answered by referencing only the work product. Include a note explaining the reasoning.\n\n"
+            "**Applicability**: Are the checklist questions formulated so that they can be answered solely by analyzing "
+            "the work product—with terminology that is both accurate to the domain standards and simplified for "
+            "accessibility to non-experts? Provide a qualification (1 to 3, where 3 is the best) and include a note "
+            "explaining the reasoning.\n\n"
             "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
         )
     elif rubric == "traceability":
         prompt += (
-            "**Traceability**: Provide a qualification (1 to 3, where 3 is the best) indicating if "
-            "the question is traced to at least one requirement. Include a note explaining the reasoning.\n\n"
+            "**Traceability**: Does every checklist question clearly reference at least one underlying "
+            "requirement, ensuring a transparent link between the evaluation item and its source? Provide a qualification "
+            "(1 to 3, where 3 is the best) and include a note explaining the reasoning.\n\n"
             "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
         )
     else:
@@ -92,15 +96,17 @@ def prompt_evaluation_checklist_level(checklist: pd.DataFrame, rubric: str) -> s
 
     if rubric == "applicability":
         prompt += (
-            "**Applicability**: Rate the checklist's granularity and practical usability (1 to 3, "
-            "where 3 is the best). Provide a note explaining the reasoning.\n\n"
+            "**Applicability**: Is the granularity of the checklist such that it is usable in practice? "
+            "If all the questions are answered 'yes,' does that indicate that the requirement is fulfilled? "
+            "Rate this aspect (1 to 3, where 3 is the best). Provide a note explaining the reasoning.\n\n"
             "Use the format from the `EvaluationChecklistModel` to structure your response, including "
             "ratings and detailed notes for each criterion.\n"
         )
     elif rubric == "consistency":
         prompt += (
-            "**Consistency**: Rate whether the checklist items are free from contradictions (1 to 3, "
-            "where 3 is the best). Provide a note explaining the reasoning.\n\n"
+            "**Consistency**: Across the entire checklist, do the questions maintain a coherent framework, "
+            "ensuring that no contradictions exist between topics? Rate this aspect (1 to 3, where 3 is the best). "
+            "Provide a note explaining the reasoning.\n\n"
             "Use the format from the `EvaluationChecklistModel` to structure your response, including "
             "ratings and detailed notes for each criterion.\n"
         )
@@ -147,14 +153,13 @@ def prompt_evaluation_requirements_level(work_product: str, requirement_id: str,
 
     if rubric == "traceability":
         prompt += (
-            "**Traceability**: Rate whether the requirement is traced to at least one checklist "
-            "question (1 to 3, where 3 is the best). Provide a note explaining the reasoning.\n"
+            "**Traceability**: Is each requirement explicitly linked to at least one checklist question? "
+            "Rate this aspect (1 to 3, where 3 is the best). Provide a note explaining the reasoning.\n"
         )
     elif rubric == "completeness":
         prompt += (
-            "**Completeness**: Assess whether the information in the checklist items adequately "
-            "captures the relevant details of the requirement (1 to 3, where 3 is the best). Provide a "
-            "note explaining the reasoning.\n"
+            "**Completeness**: Do the checklist questions fully capture the essential information of each requirement? "
+            "Rate this aspect (1 to 3, where 3 is the best). Provide a note explaining the reasoning.\n"
         )
     else:
         raise ValueError("Invalid rubric provided.")
