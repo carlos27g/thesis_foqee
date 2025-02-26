@@ -14,7 +14,8 @@ import pandas as pd
 from termcolor import colored
 
 from evaluation.evaluation_models import (
-    RubricQuestionModel, EvaluationRequirementModel, EvaluationChecklistModel)
+    RubricChecklistModel, RubricQuestionModel, RubricRequirementModel
+)
 from evaluation.prompts_evaluation import (
     prompt_evaluation_question_level, prompt_evaluation_checklist_level,
     prompt_evaluation_requirements_level)
@@ -78,20 +79,32 @@ def evaluate_question_level(requirements: pd.DataFrame):
                 work_product = row["Work Product"]
                 topic = row["Topic"]
                 questions = row["Questions"]
-                prompt = prompt_evaluation_question_level(work_product, topic, questions,
-                                                          matching_requirements)
-                message = [{"role": "user", "content": prompt}]
-                evaluation_answ = send_prompt(message, RubricQuestionModel)
+                rubrics = ["traceability", "correctness", "redundancy", "applicability"]
+                evaluation_answ = {}
+                for rubric in rubrics:
+                    prompt = prompt_evaluation_question_level(
+                        work_product, topic, questions, matching_requirements, rubric
+                    )
+                    message = [{"role": "user", "content": prompt}]
+                    evaluation_answ[rubric] = send_prompt(message, RubricQuestionModel)
 
-                # Update DataFrame with evaluation results
-                df_questions.at[index, "Traceability"] = evaluation_answ.traceability
-                df_questions.at[index, "Traceability Notes"] = evaluation_answ.traceability_notes
-                df_questions.at[index, "Correctness"] = evaluation_answ.correctness
-                df_questions.at[index, "Correctness Notes"] = evaluation_answ.correctness_notes
-                df_questions.at[index, "Redundancy"] = evaluation_answ.redundancy
-                df_questions.at[index, "Redundancy Notes"] = evaluation_answ.redundancy_notes
-                df_questions.at[index, "Applicability"] = evaluation_answ.applicability
-                df_questions.at[index, "Applicability Notes"] = evaluation_answ.applicability_notes
+                # Update DataFrame with evaluation results using the dictionary
+                df_questions.at[index, "Traceability"] = \
+                    evaluation_answ["traceability"].score
+                df_questions.at[index, "Traceability Notes"] = \
+                    evaluation_answ["traceability"].notes
+                df_questions.at[index, "Correctness"] = \
+                    evaluation_answ["correctness"].score
+                df_questions.at[index, "Correctness Notes"] = \
+                    evaluation_answ["correctness"].notes
+                df_questions.at[index, "Redundancy"] = \
+                    evaluation_answ["redundancy"].score
+                df_questions.at[index, "Redundancy Notes"] = \
+                    evaluation_answ["redundancy"].notes
+                df_questions.at[index, "Applicability"] = \
+                    evaluation_answ["applicability"].score
+                df_questions.at[index, "Applicability Notes"] = \
+                    evaluation_answ["applicability"].notes
 
             save_evaluation_to_excel(df_questions, "checklist_auto_evaluation/question_level",
                                      file_name)
@@ -112,21 +125,26 @@ def evaluate_checklist_level():
             evaluation = True
             file_path = os.path.join(question_level_folder, file_name)
             df_questions = pd.read_excel(file_path)
-            df_questions["Applicability"] = ""
-            df_questions["Applicability Notes"] = ""
-            df_questions["Consistency"] = ""
-            df_questions["Consistency Notes"] = ""
-
+            columns_to_add = [
+                "Applicability", "Applicability Notes",
+                "Consistency", "Consistency Notes"
+            ]
+            for column in columns_to_add:
+                df_questions[column] = ""
             print(colored(f"Evaluating {file_name} at question level", "green"))
 
-            prompt = prompt_evaluation_checklist_level(df_questions)
-            message = [{"role": "user", "content": prompt}]
-            evaluation_answ = send_prompt(message, EvaluationChecklistModel)
+            rubrics = ["applicability", "consistency"]
+            evaluation_answ = {}
+            for rubric in rubrics:
+                prompt = prompt_evaluation_checklist_level(df_questions, rubric)
+                message = [{"role": "user", "content": prompt}]
+                evaluation_answ[rubric] = send_prompt(message, RubricChecklistModel)
 
-            df_questions.at[1, "Applicability"] = evaluation_answ.applicability
-            df_questions.at[1, "Applicability Notes"] = evaluation_answ.applicability_notes
-            df_questions.at[1, "Consistency"] = evaluation_answ.consistency
-            df_questions.at[1, "Consistency Notes"] = evaluation_answ.consistency_notes
+            # Update DataFrame with evaluation results using the dictionary
+            df_questions.at[1, "Applicability"] = evaluation_answ["applicability"].score
+            df_questions.at[1, "Applicability Notes"] = evaluation_answ["applicability"].notes
+            df_questions.at[1, "Consistency"] = evaluation_answ["consistency"].score
+            df_questions.at[1, "Consistency Notes"] = evaluation_answ["consistency"].notes
 
             save_evaluation_to_excel(df_questions, "checklist_auto_evaluation/checklist_level",
                                      file_name)
@@ -149,10 +167,12 @@ def evaluate_requirements_level():
             df_requirements = pd.read_excel(file_path)
             print(colored(f"Evaluating {file_name} at question level", "green"))
 
-            df_requirements["Traceability"] = ""
-            df_requirements["Traceability Notes"] = ""
-            df_requirements["Completeness"] = ""
-            df_requirements["Completeness Notes"] = ""
+            columns_to_add = [
+                "Traceability", "Traceability Notes",
+                "Completeness", "Completeness Notes"
+            ]
+            for column in columns_to_add:
+                df_requirements[column] = ""
 
             grouped_requirements = df_requirements.groupby(["Work Product", "ID", "Description"])
 
@@ -163,19 +183,24 @@ def evaluate_requirements_level():
                 print(f"- Evaluating requirement ID: {requirement_id}")
                 checklist_items = group[["Title", "Questions", "List_Ids"]].values.tolist()
 
-                prompt = prompt_evaluation_requirements_level(work_product, requirement_id,
-                                                              description, checklist_items)
-                message = [{"role": "user", "content": prompt}]
-                evaluation_answ = send_prompt(message, EvaluationRequirementModel)
+                rubrics = ["traceability", "completeness"]
+                evaluation_answ = {}
+                for rubric in rubrics:
+                    prompt = prompt_evaluation_requirements_level(work_product, requirement_id,
+                                                                  description, checklist_items,
+                                                                  rubric)
+                    message = [{"role": "user", "content": prompt}]
+                    evaluation_answ[rubric] = send_prompt(message, RubricRequirementModel)
 
-                df_requirements.loc[df_requirements["ID"] == name, "Traceability"] = \
-                    evaluation_answ.traceability
-                df_requirements.loc[df_requirements["ID"] == name, "Traceability Notes"] = \
-                    evaluation_answ.traceability_notes
-                df_requirements.loc[df_requirements["ID"] == name, "Completeness"] = \
-                    evaluation_answ.completeness
-                df_requirements.loc[df_requirements["ID"] == name, "Completeness Notes"] = \
-                    evaluation_answ.completeness_notes
+                # Update DataFrame with evaluation results using the dictionary
+                df_requirements.loc[df_requirements["ID"] == requirement_id,
+                                    "Traceability"] = evaluation_answ["traceability"].score
+                df_requirements.loc[df_requirements["ID"] == requirement_id,
+                                    "Traceability Notes"] = evaluation_answ["traceability"].notes
+                df_requirements.loc[df_requirements["ID"] == requirement_id,
+                                    "Completeness"] = evaluation_answ["completeness"].score
+                df_requirements.loc[df_requirements["ID"] == requirement_id,
+                                    "Completeness Notes"] = evaluation_answ["completeness"].notes
 
             save_evaluation_to_excel(df_requirements,
                                      "checklist_auto_evaluation/requirements_level",

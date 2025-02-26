@@ -49,7 +49,7 @@ class RubricChecklistModel(EvaluationModel):
     Each criterion is accompanied by notes providing arguments or explanations for the given 
     qualifications.
     """
-    rubric = Literal['applicability', 'consistency'] = Field(
+    rubric: Literal['applicability', 'consistency'] = Field(
         ...,
         description="The rubric name indicating the evaluation criterion."
     )
@@ -60,7 +60,7 @@ class RubricRequirementModel(EvaluationModel):
     EvaluationRequirementModel is a Pydantic model used to evaluate requirements
     based on the criterion of Traceablity and Completeness.
     """
-    rubric = Literal['traceability', 'completeness'] = Field(
+    rubric: Literal['traceability', 'completeness'] = Field(
         ...,
         description="The rubric name indicating the evaluation criterion."
     )
