@@ -7,23 +7,41 @@
         {
             "name": "Python Debugger: FOQEE_CHECKLIST_GENERATOR",
             "type": "debugpy",
-            "request": "launch",       
+            "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "envFile": "${workspaceFolder}/.env",
-            "env": {                                        
+            "env": {
                 "CHATGPT_MODEL": "gpt-4o",
                 "MODEL_TEMPERATURE": "0.0",
                 "MAX_TRIES_STRUCTURED_OUTPUT": "3",
-                "RESTRICT_WORK_PRODUCTS": "true", // When developig, use only two WP
-                "NEW_CHECKLISTS": "true",
+                "RESTRICT_WORK_PRODUCTS": "true", // When developing, use only two WP
+                "NEW_CHECKLISTS": "false",
                 "NEW_CONTEXT": "false",
-                "FILTER_REQUIREMENTS": "true", // Iteration 2: defautl is true
-                "EXTRACT_ISO_KNOWLEDGE": "true", // Iteration 2: defautl is true
-                "TOPIC_GROUPING": "true", // Iteration 2: defautl is true
-                "ADD_WP_CONTEXT": "true", // Iteration 3: defautl is true
-            },
+                "FILTER_REQUIREMENTS": "true", // Iteration 2: default is true
+                "EXTRACT_ISO_KNOWLEDGE": "true", // Iteration 2: default is true
+                "TOPIC_GROUPING": "true", // Iteration 2: default is true
+                "ADD_WP_CONTEXT": "true" // Iteration 3: default is true
+            }
+        },
+        {   
+            "name": "Python Debugger: CHECKLIST_EVALUATION",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/evaluation/evaluate_checklist.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "CHATGPT_MODEL": "gpt-4o",
+                "MODEL_TEMPERATURE": "0.0",
+                "MAX_TRIES_STRUCTURED_OUTPUT": "3",
+                "EVALUATE_QUESTION_LEVEL": "true",
+                "EVALUATE_CHECKLIST_LEVEL": "true",
+                "EVALUATE_REQUIREMENTS_LEVEL": "true"
+            }
         }
     ]
 }

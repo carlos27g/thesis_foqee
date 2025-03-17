@@ -23,11 +23,16 @@ from llm_services.models_context import (
     DisambiguationModel, AbbreviationModel, AbbreviationListModel, ConceptsModel,
     WorkProductContextModel)
 
+from evaluation.evaluation_models import (
+    RubricQuestionModel, RubricChecklistModel, RubricRequirementModel
+)      
+
 
 messages_unclassified = []
 messages_checklist_generation = []
 messages_content_segmentation = []
 messages_context_generation = []
+messages_evaluation = []
 
 def add_message(role, content, basemodel=None):
     """Add a message to the messages list with classification."""
@@ -53,6 +58,11 @@ def add_message(role, content, basemodel=None):
         if role == "SYSTEM":
             messages_context_generation.append(
                 "# -------------------------------------------------- #\n")
+    elif classification == "evaluation":
+        messages_unclassified.append(f"{role}: {content}\n")
+        if role == "SYSTEM":
+            messages_evaluation.append(
+                "# -------------------------------------------------- #\n")
     else:
         messages_unclassified.append(f"{role}: {content}\n")
         if role == "SYSTEM":
@@ -76,6 +86,10 @@ def classify_basemodel(basemodel):
             WorkProductContextModel
     )):
         return "context_generation"
+    if issubclass(basemodel, (
+        RubricQuestionModel, RubricRequirementModel, RubricChecklistModel
+        )):
+        return "evaluation"
     return "unclassified"
 
 def save_messages(file_name, classification):
