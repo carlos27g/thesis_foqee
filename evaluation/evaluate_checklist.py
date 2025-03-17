@@ -49,11 +49,11 @@ def evaluate_checklist():
 
     if os.getenv("EVALUATE_QUESTION_LEVEL") == "true":
         print(colored("Starting question level evaluation...", "blue"))
-        #evaluate_question_level(requirements)
+        evaluate_question_level(requirements)
 
     if os.getenv("EVALUATE_CHECKLIST_LEVEL") == "true":
         print(colored("Starting checklist level evaluation...", "blue"))
-        #evaluate_checklist_level()
+        evaluate_checklist_level()
 
     if os.getenv("EVALUATE_REQUIREMENTS_LEVEL") == "true":
         print(colored("Starting requirements level evaluation...", "blue"))
@@ -128,7 +128,7 @@ def evaluate_checklist_level():
         if file_name.endswith(".xlsx"):
             evaluation = True
             file_path = os.path.join(question_level_folder, file_name)
-            df_questions = pd.read_excel(file_path)
+            df_questions = pd.read_excel(file_path, engine='openpyxl')
             print(colored(f"Evaluating {file_name} at question level", "green"))
             columns_to_add = [
                 "Applicability", "Applicability Notes", "Consistency", "Consistency Notes"
@@ -168,7 +168,7 @@ def evaluate_requirements_level():
         if file_name.endswith(".xlsx"):
             evaluation = True
             file_path = os.path.join(question_level_folder, file_name)
-            df_requirements = pd.read_excel(file_path)
+            df_requirements = pd.read_excel(file_path, engine='openpyxl')
             print(colored(f"Evaluating {file_name} at question level", "green"))
 
             columns_to_add = [
