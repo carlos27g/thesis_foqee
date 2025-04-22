@@ -57,11 +57,13 @@ def prompt_evaluation_question_level(work_product: str, topic: str, questions: s
         )
     elif rubric == "applicability":
         prompt += (
-            "**Applicability**: Are the checklist questions formulated so that they can be answered solely by analyzing "
-            "the work product—with terminology that is both accurate to the domain standards and simplified for "
-            "accessibility to non-experts? Provide a qualification (1 to 3, where 3 is the best) and include a note "
-            "explaining the reasoning.\n\n"
-            "Return your evaluation using the format from the `RubricEvaluationModel` to structure "
+            "**Applicability**: Are the checklist questions self-contained, allowing "
+            "evaluation based solely on their content? In other words, can the questions "
+            "be answered simply by reading them without referring to the original standards? "
+            "Provide a qualification (1 to 3, where 3 is the best) and include a note explaining "
+            "the reasoning.\n\n"
+            "Return your evaluation using the format from the `RubricEvaluationModel` "
+            "to structure "
         )
     elif rubric == "traceability":
         prompt += (
